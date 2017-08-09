@@ -61,7 +61,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         float pT;
         float eta;
         float phi;
-        float mass
+        float mass;
         float et;
 
         unsigned int event;
