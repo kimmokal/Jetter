@@ -61,7 +61,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         float pT;
         float eta;
         float phi;
-        float E;
+        float mass
+        float et;
+
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
@@ -119,8 +121,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         //adding event information to jet-based tree
         event = iEvent.id().event();
         run = iEvent.id().run();
-        lumi = iEvent.id().lumi();
-
+        lumi = iEvent.id().luminosityBlock();
 
         jetTree->Fill();
     }
