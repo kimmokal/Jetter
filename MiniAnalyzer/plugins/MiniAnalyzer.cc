@@ -103,7 +103,15 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(jetToken_, jets);
     for (const pat::Jet &j : *jets) {
         if (j.pt() < 20) continue;
+        
         pT = j.pt();
+        eta = j.eta();
+        phi = j.phi();
+        E = j.E();
+
+        event = j.event();
+        run = j.run();
+        lumi = j.lumi();
 
         tree->Fill();
     }
