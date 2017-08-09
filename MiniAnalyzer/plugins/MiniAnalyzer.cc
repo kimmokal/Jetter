@@ -48,7 +48,6 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 
         // ----------member data ---------------------------
-        edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
         edm::EDGetTokenT<pat::JetCollection> jetToken_;
         
         TFile* outputFile;
@@ -67,7 +66,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
 
 MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
-    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+    
     jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
 {
 
@@ -78,7 +77,8 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     tree->Branch("pT", &pT, "pT/F");
     tree->Branch("eta", &eta, "eta/F");
     tree->Branch("phi", &phi, "phi/F");
-    tree->Branch("E", &E, "E/F");
+    tree->Branch("mass", &mass, "mass/F");
+    tree->Branch("et", &et, "et/F");
 	
     tree->Branch("event", &event, "event/l");
     tree->Branch("run", &run, "run/l");
@@ -99,6 +99,7 @@ MiniAnalyzer::~MiniAnalyzer()
 void
 MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+    
     edm::Handle<pat::JetCollection> jets;
     iEvent.getByToken(jetToken_, jets);
     for (const pat::Jet &j : *jets) {
@@ -107,14 +108,18 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         pT = j.pt();
         eta = j.eta();
         phi = j.phi();
-        E = j.E();
+        mass = j.mass();
+        et = j.et();
 
-        event = j.event();
-        run = j.run();
-        lumi = j.lumi();
+        event = iEvent.id().event();
+        run = iEvent.id().run();
+        lumi = iEvent.id().lumi();
+
 
         tree->Fill();
     }
+
+
 }
 
 //define this as a plug-in
