@@ -21,6 +21,7 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+//MiniAOD PAT libraries
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -31,8 +32,11 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
+
+//ROOT libraries
 #include "TTree.h"
 #include "TFile.h"
+
 //#include "Jetter/MiniAnalyzer/plugins/MiniAnalyzer.h"
 
 //
@@ -52,12 +56,12 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         
         TFile* outputFile;
         TTree* tree;
-
+        
+        //defining the jet specific parameters
         float pT;
         float eta;
         float phi;
         float E;
-
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
@@ -69,28 +73,28 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     
     jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
 {
+    //sets the output file, tree and the parameters to be saved to the tree
 
-//tanne branch maarittelyt
     outputFile = new TFile("nanotuple.root","recreate");
-    tree = new TTree("jet_tree", "A simplified jet tree");
+    jetTree = new TTree("jetTree", "A simplified jet tree");
 
-    tree->Branch("pT", &pT, "pT/F");
-    tree->Branch("eta", &eta, "eta/F");
-    tree->Branch("phi", &phi, "phi/F");
-    tree->Branch("mass", &mass, "mass/F");
-    tree->Branch("et", &et, "et/F");
+    jetTree->Branch("pT", &pT, "pT/F");
+    jetTree->Branch("eta", &eta, "eta/F");
+    jetTree->Branch("phi", &phi, "phi/F");
+    jetTree->Branch("mass", &mass, "mass/F");
+    jetTree->Branch("et", &et, "et/F");
 	
-    tree->Branch("event", &event, "event/l");
-    tree->Branch("run", &run, "run/l");
-    tree->Branch("lumi", &lumi, "lumi/l");
+    jetTree->Branch("event", &event, "event/l");
+    jetTree->Branch("run", &run, "run/l");
+    jetTree->Branch("lumi", &lumi, "lumi/l");
 
 }
 
 MiniAnalyzer::~MiniAnalyzer()
 {
 
-//lopettaessa
-	tree->Write();
+//at the end, write data into tree
+	jetTree->Write();
 	outputFile->Close();
 
 }
@@ -105,18 +109,20 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for (const pat::Jet &j : *jets) {
         if (j.pt() < 20) continue;
         
+        //adding jet parameters to jet-based tree
         pT = j.pt();
         eta = j.eta();
         phi = j.phi();
         mass = j.mass();
         et = j.et();
 
+        //adding event information to jet-based tree
         event = iEvent.id().event();
         run = iEvent.id().run();
         lumi = iEvent.id().lumi();
 
 
-        tree->Fill();
+        jetTree->Fill();
     }
 
 
