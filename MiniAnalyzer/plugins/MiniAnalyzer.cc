@@ -55,7 +55,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::JetCollection> jetToken_;
         
         TFile* outputFile;
-        TTree* tree;
+        TTree* jetTree;
         
         //defining the jet specific parameters
         float pT;
