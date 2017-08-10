@@ -58,7 +58,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         TTree* jetTree;
         
         //defining the jet specific parameters
-        float pT;
+        float pt;
+        float px;
         float eta;
         float phi;
         float mass;
@@ -80,7 +81,8 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     outputFile = new TFile("nanotuple.root","recreate");
     jetTree = new TTree("jetTree", "A simplified jet tree");
 
-    jetTree->Branch("pT", &pT, "pT/F");
+    jetTree->Branch("pt", &pt, "pt/F");
+    jetTree->Branch("px", &px, "px/F")
     jetTree->Branch("eta", &eta, "eta/F");
     jetTree->Branch("phi", &phi, "phi/F");
     jetTree->Branch("mass", &mass, "mass/F");
@@ -112,7 +114,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         if (j.pt() < 20) continue;
         
         //adding jet parameters to jet-based tree
-        pT = j.pt();
+        pt = j.pt();
+        px = j.px();
         eta = j.eta();
         phi = j.phi();
         mass = j.mass();
