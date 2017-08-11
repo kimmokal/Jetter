@@ -12,14 +12,16 @@
 // system include files
 #include <memory>
 
+#include <vector>
+
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "DataFormats/Math/interface/deltaR.h"
+
 
 //MiniAOD PAT libraries
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -52,8 +54,15 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 
         // ----------member data ---------------------------
+        edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+        edm::EDGetTokenT<pat::MuonCollection> muonToken_;
+        edm::EDGetTokenT<pat::ElectronCollection> electronToken_;
+        edm::EDGetTokenT<pat::TauCollection> tauToken_;
+        edm::EDGetTokenT<pat::PhotonCollection> photonToken_;
         edm::EDGetTokenT<pat::JetCollection> jetToken_;
-        
+        edm::EDGetTokenT<pat::METCollection> metToken_;
+        edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
+       
         TFile* outputFile;
         TTree* jetTree;
         
@@ -74,7 +83,15 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
 MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     
-    jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
+    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+    muonToken_(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
+    electronToken_(consumes<pat::ElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
+    tauToken_(consumes<pat::TauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
+    photonToken_(consumes<pat::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
+    jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+    metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
+    pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands")))
+
 {
     //sets the output file, tree and the parameters to be saved to the tree
 
@@ -82,7 +99,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree = new TTree("jetTree", "A simplified jet tree");
 
     jetTree->Branch("pt", &pt, "pt/F");
-    jetTree->Branch("px", &px, "px/F")
+    jetTree->Branch("px", &px, "px/F");
     jetTree->Branch("eta", &eta, "eta/F");
     jetTree->Branch("phi", &phi, "phi/F");
     jetTree->Branch("mass", &mass, "mass/F");
@@ -107,9 +124,27 @@ MiniAnalyzer::~MiniAnalyzer()
 void
 MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    
+
+    //kaikki partikkelit läpi
+
+    edm::Handle<reco::VertexCollection> vertices;
+    iEvent.getByToken(vtxToken_, vertices);
+    edm::Handle<pat::MuonCollection> muons;
+    iEvent.getByToken(muonToken_, muons);
+    edm::Handle<pat::ElectronCollection> electrons;
+    iEvent.getByToken(electronToken_, electrons);
+    edm::Handle<pat::PhotonCollection> photons;
+    iEvent.getByToken(photonToken_, photons);
+    edm::Handle<pat::TauCollection> taus;
+    iEvent.getByToken(tauToken_, taus);
     edm::Handle<pat::JetCollection> jets;
     iEvent.getByToken(jetToken_, jets);
+    edm::Handle<pat::METCollection> mets;
+    iEvent.getByToken(metToken_, mets);
+    edm::Handle<pat::PackedCandidateCollection> pfs;
+    iEvent.getByToken(pfToken_, pfs);  
+
+
     for (const pat::Jet &j : *jets) {
         if (j.pt() < 20) continue;
         
@@ -128,6 +163,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         jetTree->Fill();
     }
+
+    
 
 
 }
