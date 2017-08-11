@@ -147,7 +147,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     for (const pat::Jet &j : *jets) {
         if (j.pt() < 20) continue;
-        
+
         //adding jet parameters to jet-based tree
         pt = j.pt();
         px = j.px();
@@ -161,10 +161,19 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         run = iEvent.id().run();
         lumi = iEvent.id().luminosityBlock();
 
+        for (const pat::PackedCandidate &pf : *pfs) {
+
+            //PARTICLE LOOP GOES HERE
+            
+        }
+
+
+
+
         jetTree->Fill();
     }
 
-    
+
 
 
 }
