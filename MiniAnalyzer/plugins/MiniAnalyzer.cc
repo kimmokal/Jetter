@@ -77,6 +77,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
+        unsigned int bx;
 
 };
 
@@ -108,6 +109,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/l");
     jetTree->Branch("lumi", &lumi, "lumi/l");
+    jetTree->Branch("bx", &bx, "bx/l" )
 
 }
 
@@ -160,6 +162,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         event = iEvent.id().event();
         run = iEvent.id().run();
         lumi = iEvent.id().luminosityBlock();
+        bx = iEvent.id().bx();
 
         for (const pat::PackedCandidate &pf : *pfs) {
 
