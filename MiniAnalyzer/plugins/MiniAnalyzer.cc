@@ -13,6 +13,8 @@
 #include <memory>
 
 #include <vector>
+#include <cmath>
+
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -38,6 +40,8 @@
 //ROOT libraries
 #include "TTree.h"
 #include "TFile.h"
+#include "TLorentzVector.h"
+
 
 //#include "Jetter/MiniAnalyzer/plugins/MiniAnalyzer.h"
 
@@ -67,10 +71,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         TTree* jetTree;
         
         //defining the jet specific parameters
-        float pt;
-        float px;
-        float eta;
-        float phi;
+        float jetPt;
+        float jetEta;
+        float jetPhi;
         float mass;
         float et;
 
@@ -78,6 +81,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int run;
         unsigned int lumi;
         unsigned int bx;
+
+        typedef struct {Float_t pT,deltaR,deltaTheta,massE,type;} PF;
 
 };
 
@@ -96,20 +101,23 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 {
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("nanotuple.root","recreate");
+    outputFile = new TFile("nanotuple_particles.root","recreate");
     jetTree = new TTree("jetTree", "A simplified jet tree");
 
-    jetTree->Branch("pt", &pt, "pt/F");
-    jetTree->Branch("px", &px, "px/F");
-    jetTree->Branch("eta", &eta, "eta/F");
-    jetTree->Branch("phi", &phi, "phi/F");
+    jetTree->Branch("jetPt", &jetPt, "jetPt/F");
+    jetTree->Branch("jetEta", &jetEta, "jetEta/F");
+    jetTree->Branch("jetPhi", &jetPhi, "jetPhi/F");
     jetTree->Branch("mass", &mass, "mass/F");
     jetTree->Branch("et", &et, "et/F");
-	
+    	
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/l");
     jetTree->Branch("lumi", &lumi, "lumi/l");
     jetTree->Branch("bx", &bx, "bx/l" )
+
+    jetTree->Branch("pfs", &pfs, "pT:deltaR:deltaTheta:massE:type");
+    static PF pf;
+
 
 }
 
@@ -151,12 +159,12 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         if (j.pt() < 20) continue;
 
         //adding jet parameters to jet-based tree
-        pt = j.pt();
-        px = j.px();
-        eta = j.eta();
-        phi = j.phi();
+        jetPt = j.pt();
+        jetEta = j.eta();
+        jetPhi = j.phi();
         mass = j.mass();
         et = j.et();
+        
 
         //adding event information to jet-based tree
         event = iEvent.id().event();
@@ -164,14 +172,32 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         lumi = iEvent.id().luminosityBlock();
         bx = iEvent.id().bx();
 
-        for (const pat::PackedCandidate &pf : *pfs) {
+//        for (const pat::PackedCandidate &pf : *pfs) {
 
-            //PARTICLE LOOP GOES HERE
-            
+        for (unsigned int i = 0, n = pfs->size(); i < n; ++i) {
+            const pat::PackedCandidate &pf = (*pfs)[i];
+
+            float deltaEta = (j.eta()-pf.eta());
+            float deltaPhi = std::fabs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) float deltaPhi-=(2*M_PI);
+        
+            if ( (deltaEta < 0.5) && (deltaPhi < 0.5) ) continue;
+                
+            pT = pf.pt();
+            deltaR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            //sqrt((deltaEta*deltaEta)+(deltaPhi*deltaPhi));
+            deltaTheta = jet.theta() - pf.theta();
+          
+
+            /*
+                
+                pt = pf.pt();
+                eta = pf.eta();
+                phi = pf.phi();
+                mass = pf.mass();
+                et = pf.et();
+            */
+                        
         }
-
-
-
 
         jetTree->Fill();
     }
