@@ -180,7 +180,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             const pat::PackedCandidate &pf = (*pfs)[i];
 
             float deltaEta = (j.eta()-pf.eta());
-            float deltaPhi = std::abs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) float deltaPhi -=(2*M_PI);
+            float deltaPhi = std::abs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
         
             if ( (deltaEta < 0.5) && (deltaPhi < 0.5) ) continue;
                 
