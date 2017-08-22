@@ -54,6 +54,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
+        typedef struct PFV {float pT,dR,dTheta,mass;} PFV;
+
+
     private:
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 
@@ -82,7 +85,6 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int lumi;
         //unsigned int bx;
 
-        typedef struct {float pT,dR,dTheta,mass;} PFV;
         static PFV pfv;
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
