@@ -82,8 +82,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int lumi;
         //unsigned int bx;
 
-        typedef struct {float pT,dR,dTheta,mass;} PF;
-        static PF pfsv;
+        typedef struct {float pT,dR,dTheta,mass;} PFV;
+        static PFV pfv;
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
 };
@@ -117,7 +117,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("lumi", &lumi, "lumi/l");
     //jetTree->Branch("bx", &bx, "bx/l");
 
-    jetTree->Branch("pfsv", &pfsv, "pT:dR:dTheta:mass");
+    jetTree->Branch("pfv", &pfv, "pT:dR:dTheta:mass");
     
 
 
@@ -184,11 +184,11 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         
             if ( (deltaEta < 0.5) && (deltaPhi < 0.5) ) continue;
                 
-            pfsv.pT = pf.pt();
-            pfsv.dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            pfv.pT = pf.pt();
+            pfv.dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
             //sqrt((deltaEta*deltaEta)+(deltaPhi*deltaPhi));
-            pfsv.dTheta = std::abs(j.theta() - pf.theta());
-            pfsv.mass = pf.mass();
+            pfv.dTheta = std::abs(j.theta() - pf.theta());
+            pfv.mass = pf.mass();
             //type = pf.
 
             /*
