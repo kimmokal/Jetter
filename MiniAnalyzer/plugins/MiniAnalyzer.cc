@@ -82,7 +82,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int lumi;
         unsigned int bx;
 
-        typedef struct {Float_t pT,deltaR,deltaTheta,mass;} PF;
+        typedef struct {float pT,dR,dTheta,mass;} PF;
+        static PF pfs;
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
 };
@@ -114,10 +115,10 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/l");
     jetTree->Branch("lumi", &lumi, "lumi/l");
-    jetTree->Branch("bx", &bx, "bx/l" )
+    //jetTree->Branch("bx", &bx, "bx/l");
 
-    jetTree->Branch("pfs", &pfs, "pT:deltaR:deltaTheta:mass");
-    static PF pf;
+    jetTree->Branch("pfs", &pfs, "pT:dR:dTheta:mass");
+    
 
 
 }
@@ -171,7 +172,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         event = iEvent.id().event();
         run = iEvent.id().run();
         lumi = iEvent.id().luminosityBlock();
-        bx = iEvent.id().bx();
+        //bx = iEvent.id().bx();
 
 //        for (const pat::PackedCandidate &pf : *pfs) {
 
@@ -179,14 +180,14 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             const pat::PackedCandidate &pf = (*pfs)[i];
 
             float deltaEta = (j.eta()-pf.eta());
-            float deltaPhi = std::abs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) float deltaPhi-=(2*M_PI);
+            float deltaPhi = std::abs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) float deltaPhi -=(2*M_PI);
         
             if ( (deltaEta < 0.5) && (deltaPhi < 0.5) ) continue;
                 
             pT = pf.pt();
-            deltaR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
             //sqrt((deltaEta*deltaEta)+(deltaPhi*deltaPhi));
-            deltaTheta = std::abs(jet.Theta() - pf.Theta());
+            dTheta = std::abs(j.theta() - pf.theta());
             mass = pf.mass();
             //type = pf.
 
