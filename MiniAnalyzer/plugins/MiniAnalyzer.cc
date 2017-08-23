@@ -54,9 +54,6 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        typedef struct PFV {float pT,dR,dTheta,mass;} PFV;
-        static PFV pfv;
-
 
     private:
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -119,6 +116,10 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("run", &run, "run/l");
     jetTree->Branch("lumi", &lumi, "lumi/l");
     //jetTree->Branch("bx", &bx, "bx/l");
+
+
+    typedef struct PFV {float pT,dR,dTheta,mass;} PFV;
+    static PFV pfv;
 
     jetTree->Branch("pfv", &pfv, "pT:dR:dTheta:mass");
     
