@@ -119,9 +119,9 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
 
     typedef struct PFV {float pT,dR,dTheta,mass;} PFV;
-    static PFV pfv;
+    static PFV pfvect;
 
-    jetTree->Branch("pfv", &pfv, "pT:dR:dTheta:mass");
+    jetTree->Branch("pfvect", &pfvect, "pT:dR:dTheta:mass");
     
 
 
@@ -188,11 +188,11 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         
             if ( (deltaEta < 0.5) && (deltaPhi < 0.5) ) continue;
                 
-            pfv.pT = pf.pt();
-            pfv.dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            pfvect.pT = pf.pt();
+            pfvect.dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
             //sqrt((deltaEta*deltaEta)+(deltaPhi*deltaPhi));
-            pfv.dTheta = std::abs(j.theta() - pf.theta());
-            pfv.mass = pf.mass();
+            pfvect.dTheta = std::abs(j.theta() - pf.theta());
+            pfvect.mass = pf.mass();
             //type = pf.
 
             /*
