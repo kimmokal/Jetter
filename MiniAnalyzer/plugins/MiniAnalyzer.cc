@@ -57,6 +57,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         struct PFV {float pT,dR,dTheta, mass;};
         static PFV pfv;
 
+
     private:
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
 
