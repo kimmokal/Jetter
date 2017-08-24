@@ -84,18 +84,13 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int run;
         unsigned int lumi;
         //unsigned int bx;
-
-        /*
-        typedef struct PFV {float pT,dR,dTheta,mass;} PFV;
-        static PFV pfv;
-
-        PFV::pfv;
-        */
         
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
 };
+
 MiniAnalyzer::PFV MiniAnalyzer::pfv;
+
 MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     
     vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
