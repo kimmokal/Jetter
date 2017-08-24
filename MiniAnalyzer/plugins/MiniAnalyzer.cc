@@ -83,11 +83,19 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int lumi;
         //unsigned int bx;
 
+        /*
         typedef struct PFV {float pT,dR,dTheta,mass;} PFV;
         static PFV pfv;
 
+        PFV::pfv;
+        */
         
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
+        struct PFV
+        {
+            float pT,dR,dTheta, mass;
+        };
+        static PFV pfv;
 
 };
 
