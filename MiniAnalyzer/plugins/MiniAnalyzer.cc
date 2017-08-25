@@ -186,7 +186,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             float deltaEta = (j.eta()-pf.eta());
             float deltaPhi = std::abs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
         
-            if ( (deltaEta < 0.5) && (deltaPhi < 0.5) ) continue;
+            if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
             pfv.pT = pf.pt();
             pfv.dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
