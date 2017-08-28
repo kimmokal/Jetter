@@ -30,3 +30,5 @@ process.demo = cms.EDAnalyzer('MiniAnalyzer',
 
 
 process.p = cms.Path(process.demo)
+
+process.MessageLogger.cerr.FwkReport.reportEvery = 10
