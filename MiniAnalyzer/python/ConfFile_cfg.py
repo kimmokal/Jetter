@@ -8,7 +8,7 @@ process = cms.Process("Demo")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 #Choose how many events to process
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #Select the MiniAOD file to process
 process.source = cms.Source("PoolSource",
@@ -32,3 +32,4 @@ process.demo = cms.EDAnalyzer('MiniAnalyzer',
 process.p = cms.Path(process.demo)
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
+
