@@ -1,6 +1,8 @@
-# Jetter - A jet nanotuple producer from CMS MiniAOD data
+# Jetter - a Jet nanotuple producer from CMS MiniAOD
 
-This project is a CMSSW module producing mostly flat tuples from run 2 data/MC, to be used in DNN training.
+This project is a CMSSW module producing mostly flat tuples from run 2 data/MC
+
+(A little bit under construction)
 
 So far the code works on lxplus and CMSSW_8_0_6.
 
@@ -31,14 +33,15 @@ cd Jetter/MiniAnalyzer
 
 ## Running the code
 
-Change the source file in python/ConfFile_cfg.py 
+Change the input file in python/ConfFile_cfg.py
 
-To run the code and generate the tuples:
+To generate the tuples, run
 ```
     cmsRun python/ConfFile_cfg.py
 ```
-To view the tuples in ROOT:
+And to view the tuples in ROOT
 ```
     root -l nanotuple_*
     TBrowser a
 ```
+from there use the graphical interface.
