@@ -19,7 +19,7 @@ Make sure you register your SSH key: https://help.github.com/articles/generating
 
 Creating the work area
 ```
-ssh -Y CERNusername@lxplus006.cern.ch
+ssh -Y CERNusername@lxplus.cern.ch
 
 mkdir WorkingArea
 cd WorkingArea
@@ -33,7 +33,7 @@ cd Jetter/MiniAnalyzer
 
 ## Running the code
 
-Change the input file in python/ConfFile_cfg.py
+Change the input file in python/ConfFile_cfg.py and if desired, the output filename in plugins/MiniAnalyzer.cc .
 
 To generate the tuples, run
 ```
