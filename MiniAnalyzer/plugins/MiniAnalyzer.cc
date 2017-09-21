@@ -89,11 +89,17 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int lumi;
         //unsigned int bx;
         
+        float genPt;
+        float genEta;
+        float genPhi;
+        float genMass;
+
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
 };
 
-MiniAnalyzer::PFV MiniAnalyzer::pfv;
+MiniAnalyzer::PFV MiniAnalyzer::pfv[kMaxPF];
+MiniAnalyzer::PFV MiniAnalyzer::genv[kMaxPF];
 
 MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     
@@ -234,7 +240,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             genv[i].mass = gen.mass();
 	    
 	    if ( genv[i].dR < 0.4 )
-	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.E());
+	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
         } // for pfs
 
         genPt = g.Pt();
