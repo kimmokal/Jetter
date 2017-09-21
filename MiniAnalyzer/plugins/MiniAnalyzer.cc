@@ -54,7 +54,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        struct PFV {int np, float pT,dR,dTheta, mass;};
+        struct PFV {int np; float pT,dR,dTheta, mass;};
         static const int kMaxPF = 500;
         static PFV pfv[kMaxPF];
         static PFV genv[kMaxPF];
