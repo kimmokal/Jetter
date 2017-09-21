@@ -55,8 +55,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         ~MiniAnalyzer();
 
         struct PFV {float pT,dR,dTheta, mass;};
-        static PFV pfv;
-        static PFV genv;
+        static const int kMaxPF = 500;
+        static PFV pfv[kMaxPF];
+        static PFV genv[kMaxPF];
 
 
     private:
@@ -81,6 +82,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         float jetEta;
         float jetPhi;
         float jetMass;
+        float jetArea;
 
         unsigned int event;
         unsigned int run;
@@ -196,6 +198,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 //        for (const pat::PackedCandidate &pf : *pfs) {
 
+	assert(kMaxPF < pfs->size());
         for (unsigned int i = 0; i != pfs->size(); ++i) {
             const pat::PackedCandidate &pf = (*pfs)[i];
 
@@ -213,8 +216,9 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         } // for pfs
 
 
+	assert(kMaxPF < gens->size());
 	TLorentzVector g(0,0,0,0);
-        for (unsigned int i = 0; i != gen->size(); ++i) {
+        for (unsigned int i = 0; i != gens->size(); ++i) {
             const pat::PackedCandidate &gen = (*gens)[i];
 
             float deltaEta = (gen.eta()-j.eta());
@@ -233,10 +237,10 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.E());
         } // for pfs
 
-        genPt = g.pt();
-        genEta = g.eta();
-        genPhi = g.phi();
-        genMass = g.mass();
+        genPt = g.Pt();
+        genEta = g.Eta();
+        genPhi = g.Phi();
+        genMass = g.M();
 
         jetTree->Fill();
     } // for jets
