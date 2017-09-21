@@ -4,7 +4,8 @@ This project is a CMSSW module producing mostly flat tuples from run 2 data/MC
 
 (A little bit under construction)
 
-So far the code works on lxplus and CMSSW_8_0_6.
+So far the code works on lxplus and CMSSW_8_0_6, and requires grid permissions to access data ```(voms-proxy-init -voms cms)```
+
 
 ## Setting up
 
