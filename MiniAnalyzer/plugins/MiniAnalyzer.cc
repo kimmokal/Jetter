@@ -54,7 +54,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        struct PFV {float pT,dR,dTheta, mass;};
+        struct PFV {int np, float pT,dR,dTheta, mass;};
         static const int kMaxPF = 500;
         static PFV pfv[kMaxPF];
         static PFV genv[kMaxPF];
@@ -136,11 +136,11 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     //jetTree->Branch("bx", &bx, "bx/l");
 
 
-    jetTree->Branch("pf", &pfv, "npf/I:pT[npf]/F:dR[npf]/F:dTheta[npf]/F:"
-		    "mass[npf]/F");
+    jetTree->Branch("pf", pfv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+		    "mass[np]/F");
 
-    jetTree->Branch("gen", &genv, "ngen/I:pT[npf]/F:dR[npf]/F:dTheta[npf]/F:"
-		    "mass[npf]/F");
+    jetTree->Branch("gen", genv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+		    "mass[np]/F");
     
 
 
