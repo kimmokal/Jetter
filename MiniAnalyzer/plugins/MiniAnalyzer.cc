@@ -56,6 +56,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
         struct PFV {float pT,dR,dTheta, mass;};
         static PFV pfv;
+        static PFV genv;
 
 
     private:
@@ -70,6 +71,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::JetCollection> jetToken_;
         edm::EDGetTokenT<pat::METCollection> metToken_;
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
+        edm::EDGetTokenT<pat::PackedCandidateCollection> genToken_;
        
         TFile* outputFile;
         TTree* jetTree;
@@ -78,8 +80,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         float jetPt;
         float jetEta;
         float jetPhi;
-        float mass;
-        float et;
+        float jetMass;
 
         unsigned int event;
         unsigned int run;
@@ -101,7 +102,8 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     photonToken_(consumes<pat::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
     jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
-    pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands")))
+    pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
+    genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
 
 {
     //sets the output file, tree and the parameters to be saved to the tree
@@ -112,16 +114,25 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
     jetTree->Branch("jetEta", &jetEta, "jetEta/F");
     jetTree->Branch("jetPhi", &jetPhi, "jetPhi/F");
-    jetTree->Branch("mass", &mass, "mass/F");
-    jetTree->Branch("et", &et, "et/F");
+    jetTree->Branch("jetMass", &jetMass, "jetMass/F");
+    jetTree->Branch("jetArea", &jetArea, "jetArea/F");
+
+    jetTree->Branch("genPt", &genPt, "genPt/F");
+    jetTree->Branch("genEta", &genEta, "genEta/F");
+    jetTree->Branch("genPhi", &genPhi, "genPhi/F");
+    jetTree->Branch("genMass", &genMass, "genMass/F");
     	
     jetTree->Branch("event", &event, "event/l");
-    jetTree->Branch("run", &run, "run/l");
-    jetTree->Branch("lumi", &lumi, "lumi/l");
+    jetTree->Branch("run", &run, "run/I");
+    jetTree->Branch("lumi", &lumi, "lumi/I");
     //jetTree->Branch("bx", &bx, "bx/l");
 
 
-    jetTree->Branch("pfv", &pfv, "pT:dR:dTheta:mass");
+    jetTree->Branch("pf", &pfv, "npf/I:pT[npf]/F:dR[npf]/F:dTheta[npf]/F:"
+		    "mass[npf]/F");
+
+    jetTree->Branch("gen", &genv, "ngen/I:pT[npf]/F:dR[npf]/F:dTheta[npf]/F:"
+		    "mass[npf]/F");
     
 
 
@@ -159,17 +170,22 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(metToken_, mets);
     edm::Handle<pat::PackedCandidateCollection> pfs;
     iEvent.getByToken(pfToken_, pfs);  
+    edm::Handle<pat::PackedCandidateCollection> gens;
+    iEvent.getByToken(genToken_, gens);  
 
 
     for (const pat::Jet &j : *jets) {
-        if (j.pt() < 20) continue;
+
+      // Select
+      if (j.pt() < 20) continue;
+      if (fabs(j.eta()) > 1.3) continue;
 
         //adding jet parameters to jet-based tree
         jetPt = j.pt();
         jetEta = j.eta();
         jetPhi = j.phi();
-        mass = j.mass();
-        et = j.et();
+        jetMass = j.mass();
+        //et = j.et();
         
 
         //adding event information to jet-based tree
@@ -180,39 +196,52 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 //        for (const pat::PackedCandidate &pf : *pfs) {
 
-        for (unsigned int i = 0, n = pfs->size(); i < n; ++i) {
+        for (unsigned int i = 0; i != pfs->size(); ++i) {
             const pat::PackedCandidate &pf = (*pfs)[i];
 
-            float deltaEta = (j.eta()-pf.eta());
-            float deltaPhi = std::abs(j.phi()-pf.phi()); if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
-        
+            float deltaEta = (pf.eta()-j.eta());
+            float deltaPhi = std::fabs(pf.phi()-j.phi());
+	    if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
+
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
-            pfv.pT = pf.pt();
-            pfv.dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
-            //sqrt((deltaEta*deltaEta)+(deltaPhi*deltaPhi));
-            pfv.dTheta = std::abs(j.theta() - pf.theta());
-            pfv.mass = pf.mass();
-            //type = pf.
+            pfv[i].pT = pf.pt();
+            pfv[i].dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            pfv[i].dTheta = std::fabs(pf.theta() - j.theta());
+            pfv[i].mass = pf.mass();                        
+        } // for pfs
 
-            /*
+
+	TLorentzVector g(0,0,0,0);
+        for (unsigned int i = 0; i != gen->size(); ++i) {
+            const pat::PackedCandidate &gen = (*gens)[i];
+
+            float deltaEta = (gen.eta()-j.eta());
+            float deltaPhi = std::fabs(gen.phi()-j.phi());
+	    if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
+
+            if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
-                pt = pf.pt();
-                eta = pf.eta();
-                phi = pf.phi();
-                mass = pf.mass();
-                et = pf.et();
-            */
-                        
-        }
+            genv[i].pT = gen.pt();
+            genv[i].dR = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
+            genv[i].dTheta = std::fabs(gen.theta() - j.theta());
+            genv[i].mass = gen.mass();
+	    
+	    if ( genv[i].dR < 0.4 )
+	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.E());
+        } // for pfs
+
+        genPt = g.pt();
+        genEta = g.eta();
+        genPhi = g.phi();
+        genMass = g.mass();
 
         jetTree->Fill();
-    }
+    } // for jets
 
-
-
-
-}
+} // analyze
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MiniAnalyzer);
