@@ -113,8 +113,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
 };
 
-MiniAnalyzer::PFV MiniAnalyzer::pfv[kMaxPF];
-MiniAnalyzer::PFV MiniAnalyzer::genv[kMaxPF];
+//MiniAnalyzer::PFV MiniAnalyzer::pfv[kMaxPF];
+//MiniAnalyzer::PFV MiniAnalyzer::genv[kMaxPF];
 
 MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     
@@ -246,11 +246,12 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
+            pf_pT[np] = pf.pt();
+            pf_dR[np] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            pf_dTheta[np] = std::fabs(pf.theta() - j.theta());
+            pf_mass[np] = pf.mass();                        
 	    ++np;
-            pf_pT = pf.pt();
-            pf_dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
-            pf_dTheta = std::fabs(pf.theta() - j.theta());
-            pf_mass = pf.mass();                        
+
         } // for pfs
 	npfv = np;
 
@@ -268,11 +269,11 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
+            gen_pT[ng] = gen.pt();
+            gen_dR[ng] = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
+            gen_dTheta[ng] = std::fabs(gen.theta() - j.theta());
+            gen_mass[ng] = gen.mass();
 	    ++ng;
-            gen_pT = gen.pt();
-            gen_dR = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
-            gen_dTheta = std::fabs(gen.theta() - j.theta());
-            gen_mass = gen.mass();
 	    
 	    if ( genv[i].dR < 0.4 )
 	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
