@@ -141,12 +141,20 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
 
     jetTree->Branch("np",&npfv,"np/I");
-    jetTree->Branch("pf", pfv, "pT[np]/F:dR[np]/F:dTheta[np]/F:"
-		    "mass[np]/F");
+    //jetTree->Branch("pf", pfv, "pT[np]/F:dR[np]/F:dTheta[np]/F:"
+    //	    "mass[np]/F");
+    jetTree->Branch("pf_pT", &pfv.pT, "pT[np]/F");
+    jetTree->Branch("pf_dR", &pfv.dR, "dR[np]/F");
+    jetTree->Branch("pf_dTheta", &pfv.dTheta, "dTheta[np]/F");
+    jetTree->Branch("pf_mass", &pfv.mass, "mass[np]/F");
 
     jetTree->Branch("ng",&ngenv,"ng/I");
-    jetTree->Branch("gen", genv, "pT[ng]/F:dR[ng]/F:dTheta[ng]/F:"
-		    "mass[ng]/F");
+    //jetTree->Branch("gen", genv, "pT[ng]/F:dR[ng]/F:dTheta[ng]/F:"
+    //	    "mass[ng]/F");
+    jetTree->Branch("gen_pT", &genv.pT, "gen_pT[ng]/F");
+    jetTree->Branch("gen_dR", &genv.dR, "gen_dR[ng]/F");
+    jetTree->Branch("gen_dTheta", &genv.dTheta, "gen_dTheta[ng]/F");
+    jetTree->Branch("gen_mass", &genv.mass, "gen_mass[ng]/F");
     
 
 
