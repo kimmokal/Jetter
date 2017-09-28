@@ -57,7 +57,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        struct PFV {int np; float pT,dR,dTheta, mass;};
+        int npfv, ngenv;
+        struct PFV {float pT,dR,dTheta, mass;};
         static const int kMaxPF = 1500;
         static PFV pfv[kMaxPF];
         static PFV genv[kMaxPF];
@@ -139,11 +140,13 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     //jetTree->Branch("bx", &bx, "bx/l");
 
 
-    jetTree->Branch("pf", pfv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+    jetTree->Branch("np",&npfv,"np/I");
+    jetTree->Branch("pf", pfv, "pT[np]/F:dR[np]/F:dTheta[np]/F:"
 		    "mass[np]/F");
 
-    jetTree->Branch("gen", genv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
-		    "mass[np]/F");
+    jetTree->Branch("ng",&ngenv,"ng/I");
+    jetTree->Branch("gen", genv, "pT[ng]/F:dR[ng]/F:dTheta[ng]/F:"
+		    "mass[ng]/F");
     
 
 
@@ -230,7 +233,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             pfv[i].dTheta = std::fabs(pf.theta() - j.theta());
             pfv[i].mass = pf.mass();                        
         } // for pfs
-	pfv[i].np = np;
+	pfv.np = np;
 
 
 	assert(kMaxPF > gens->size());
