@@ -60,12 +60,19 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         int npfv, ngenv;
         struct PFV {float pT,dR,dTheta, mass;};
         static const int kMaxPF = 1500;
+
+        Float_t pf_pT[kMaxPF];
+        Float_t pf_dR[kMaxPF];
+        Float_t pf_dTheta[kMaxPF];
+        Float_t pf_mass[kMaxPF];
+
+        Float_t gen_pT[kMaxPF];
+        Float_t gen_dR[kMaxPF];
+        Float_t gen_dTheta[kMaxPF];
+        Float_t gen_mass[kMaxPF];
+
         //static PFV pfv[kMaxPF];
-        Float_t pfv_pT[kMaxPF];
-        Float_t pfv_gen[kMaxPF];
-        Float_t pfv_pT[kMaxPF];
-        Float_t pfv_pT[kMaxPF];
-        static PFV genv[kMaxPF];
+	//static PFV genv[kMaxPF];
 
 
     private:
@@ -147,18 +154,18 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("np",&npfv,"np/I");
     //jetTree->Branch("pf", pfv, "pT[np]/F:dR[np]/F:dTheta[np]/F:"
     //	    "mass[np]/F");
-    jetTree->Branch("pf_pT", &pfv.pT, "pT[np]/F");
-    jetTree->Branch("pf_dR", &pfv.dR, "dR[np]/F");
-    jetTree->Branch("pf_dTheta", &pfv.dTheta, "dTheta[np]/F");
-    jetTree->Branch("pf_mass", &pfv.mass, "mass[np]/F");
+    jetTree->Branch("pf_pT", &pf_pT, "pT[np]/F");
+    jetTree->Branch("pf_dR", &pf_dR, "dR[np]/F");
+    jetTree->Branch("pf_dTheta", &pf_dTheta, "dTheta[np]/F");
+    jetTree->Branch("pf_mass", &pf_mass, "mass[np]/F");
 
     jetTree->Branch("ng",&ngenv,"ng/I");
     //jetTree->Branch("gen", genv, "pT[ng]/F:dR[ng]/F:dTheta[ng]/F:"
     //	    "mass[ng]/F");
-    jetTree->Branch("gen_pT", &genv.pT, "gen_pT[ng]/F");
-    jetTree->Branch("gen_dR", &genv.dR, "gen_dR[ng]/F");
-    jetTree->Branch("gen_dTheta", &genv.dTheta, "gen_dTheta[ng]/F");
-    jetTree->Branch("gen_mass", &genv.mass, "gen_mass[ng]/F");
+    jetTree->Branch("gen_pT", &gen_pT, "gen_pT[ng]/F");
+    jetTree->Branch("gen_dR", &gen_dR, "gen_dR[ng]/F");
+    jetTree->Branch("gen_dTheta", &gen_dTheta, "gen_dTheta[ng]/F");
+    jetTree->Branch("gen_mass", &gen_mass, "gen_mass[ng]/F");
     
 
 
@@ -240,10 +247,10 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
 	    ++np;
-            pfv[i].pT = pf.pt();
-            pfv[i].dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
-            pfv[i].dTheta = std::fabs(pf.theta() - j.theta());
-            pfv[i].mass = pf.mass();                        
+            pf_pT = pf.pt();
+            pf_dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            pf_dTheta = std::fabs(pf.theta() - j.theta());
+            pf_mass = pf.mass();                        
         } // for pfs
 	npfv = np;
 
@@ -262,10 +269,10 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
 	    ++ng;
-            genv[i].pT = gen.pt();
-            genv[i].dR = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
-            genv[i].dTheta = std::fabs(gen.theta() - j.theta());
-            genv[i].mass = gen.mass();
+            gen_pT = gen.pt();
+            gen_dR = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
+            gen_dTheta = std::fabs(gen.theta() - j.theta());
+            gen_mass = gen.mass();
 	    
 	    if ( genv[i].dR < 0.4 )
 	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
