@@ -206,6 +206,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 //        for (const pat::PackedCandidate &pf : *pfs) {
 
+	if (kMaxPF < pfs->size())
+	  cout << "pfs->size(): " << pfs->size() << endl << flush;
 	assert(kMaxPF < pfs->size());
         for (unsigned int i = 0; i != pfs->size(); ++i) {
             const pat::PackedCandidate &pf = (*pfs)[i];
