@@ -60,7 +60,11 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         int npfv, ngenv;
         struct PFV {float pT,dR,dTheta, mass;};
         static const int kMaxPF = 1500;
-        static PFV pfv[kMaxPF];
+        //static PFV pfv[kMaxPF];
+        Float_t pfv_pT[kMaxPF];
+        Float_t pfv_gen[kMaxPF];
+        Float_t pfv_pT[kMaxPF];
+        Float_t pfv_pT[kMaxPF];
         static PFV genv[kMaxPF];
 
 
