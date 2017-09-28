@@ -275,7 +275,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             gen_mass[ng] = gen.mass();
 	    ++ng;
 	    
-	    if ( genv[i].dR < 0.4 )
+	    if ( gen_dR[i] < 0.4 )
 	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
         } // for pfs
 	ngenv = ng;
