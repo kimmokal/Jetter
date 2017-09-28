@@ -5,3 +5,4 @@
 <flags EDM_PLUGIN="1"/>
 <use name="DataFormats/VertexReco"/>
 <use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/HepMCCandidate"/>

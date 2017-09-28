@@ -36,6 +36,9 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 
 //ROOT libraries
@@ -87,7 +90,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::JetCollection> jetToken_;
         edm::EDGetTokenT<pat::METCollection> metToken_;
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
-        edm::EDGetTokenT<pat::PackedCandidateCollection> genToken_;
+        // edm::EDGetTokenT<pat::PackedCandidateCollection> genToken_;
+	edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenToken_;
+      	edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
        
         TFile* outputFile;
         TTree* jetTree;
@@ -126,7 +131,9 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
     pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
-    genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
+    //genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
+    prunedGenToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("pruned"))),
+    packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
 
 {
     //sets the output file, tree and the parameters to be saved to the tree
@@ -185,6 +192,10 @@ void
 MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
+    using namespace reco;
+    using namespace pat;
+
+
     //kaikki partikkelit läpi
 
     edm::Handle<reco::VertexCollection> vertices;
@@ -203,9 +214,20 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(metToken_, mets);
     edm::Handle<pat::PackedCandidateCollection> pfs;
     iEvent.getByToken(pfToken_, pfs);  
-    edm::Handle<pat::PackedCandidateCollection> gens;
-    iEvent.getByToken(genToken_, gens);  
+//    edm::Handle<pat::PackedCandidateCollection> gens;
+//    iEvent.getByToken(genToken_, gens);
 
+
+	// EITHER THIS
+        // Pruned particles are the one containing "important" stuff
+//    edm::Handle<reco::GenParticle> gens;
+//    iEvent.getByToken(prunedGenToken_, gens);
+
+	// OR THIS
+        // Packed particles are all the status 1, so usable to remake jets
+        // The navigation from status 1 to pruned is possible (the other direction should be made by hand)
+//    edm::Handle<pat::PackedGenParticle> gens;
+//    iEvent.getByToken(packedGenToken_, gens);
 
 
     for (const pat::Jet &j : *jets) {
