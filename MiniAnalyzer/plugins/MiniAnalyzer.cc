@@ -15,6 +15,7 @@
 #include <vector>
 #include <cmath>
 
+#include <iostream>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -44,6 +45,8 @@
 
 
 //#include "Jetter/MiniAnalyzer/plugins/MiniAnalyzer.h"
+
+using namespace std;
 
 //
 // class declaration
@@ -182,6 +185,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(genToken_, gens);  
 
 
+
     for (const pat::Jet &j : *jets) {
 
       // Select
@@ -206,9 +210,9 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 //        for (const pat::PackedCandidate &pf : *pfs) {
 
-	if (kMaxPF < pfs->size())
+	if (!(kMaxPF < pfs->size()))
 	  cout << "pfs->size(): " << pfs->size() << endl << flush;
-	assert(kMaxPF < pfs->size());
+	assert(kMaxPF > pfs->size());
         for (unsigned int i = 0; i != pfs->size(); ++i) {
             const pat::PackedCandidate &pf = (*pfs)[i];
 
@@ -226,7 +230,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         } // for pfs
 
 
-	assert(kMaxPF < gens->size());
+	assert(kMaxPF > gens->size());
 	TLorentzVector g(0,0,0,0);
         for (unsigned int i = 0; i != gens->size(); ++i) {
             const pat::PackedCandidate &gen = (*gens)[i];
