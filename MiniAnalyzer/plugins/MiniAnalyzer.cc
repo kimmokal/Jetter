@@ -55,7 +55,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         ~MiniAnalyzer();
 
         struct PFV {int np; float pT,dR,dTheta, mass;};
-        static const int kMaxPF = 500;
+        static const int kMaxPF = 1500;
         static PFV pfv[kMaxPF];
         static PFV genv[kMaxPF];
 
@@ -136,10 +136,10 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     //jetTree->Branch("bx", &bx, "bx/l");
 
 
-    jetTree->Branch("pf", pfv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+    jetTree->Branch("pf", &pfv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
 		    "mass[np]/F");
 
-    jetTree->Branch("gen", genv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+    jetTree->Branch("gen", &genv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
 		    "mass[np]/F");
     
 
@@ -201,6 +201,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         run = iEvent.id().run();
         lumi = iEvent.id().luminosityBlock();
         //bx = iEvent.id().bx();
+
+	//particle loop starts here
 
 //        for (const pat::PackedCandidate &pf : *pfs) {
 
