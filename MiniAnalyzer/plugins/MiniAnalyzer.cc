@@ -233,7 +233,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             pfv[i].dTheta = std::fabs(pf.theta() - j.theta());
             pfv[i].mass = pf.mass();                        
         } // for pfs
-	pfv.np = np;
+	npfv = np;
 
 
 	assert(kMaxPF > gens->size());
@@ -258,7 +258,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    if ( genv[i].dR < 0.4 )
 	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
         } // for pfs
-	gen[i].np = ng;
+	ngenv = ng;
 
         genPt = g.Pt();
         genEta = g.Eta();
