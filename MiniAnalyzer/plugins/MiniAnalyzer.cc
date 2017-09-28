@@ -139,10 +139,10 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     //jetTree->Branch("bx", &bx, "bx/l");
 
 
-    jetTree->Branch("pf", &pfv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+    jetTree->Branch("pf", pfv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
 		    "mass[np]/F");
 
-    jetTree->Branch("gen", &genv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
+    jetTree->Branch("gen", genv, "np/I:pT[np]/F:dR[np]/F:dTheta[np]/F:"
 		    "mass[np]/F");
     
 
@@ -213,6 +213,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	if (!(kMaxPF < pfs->size()))
 	  cout << "pfs->size(): " << pfs->size() << endl << flush;
 	assert(kMaxPF > pfs->size());
+	int np(0);
         for (unsigned int i = 0; i != pfs->size(); ++i) {
             const pat::PackedCandidate &pf = (*pfs)[i];
 
@@ -223,15 +224,18 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
+	    ++np;
             pfv[i].pT = pf.pt();
             pfv[i].dR = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
             pfv[i].dTheta = std::fabs(pf.theta() - j.theta());
             pfv[i].mass = pf.mass();                        
         } // for pfs
+	pfv[i].np = np;
 
 
 	assert(kMaxPF > gens->size());
 	TLorentzVector g(0,0,0,0);
+	int ng(0);
         for (unsigned int i = 0; i != gens->size(); ++i) {
             const pat::PackedCandidate &gen = (*gens)[i];
 
@@ -242,6 +246,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
+	    ++ng;
             genv[i].pT = gen.pt();
             genv[i].dR = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
             genv[i].dTheta = std::fabs(gen.theta() - j.theta());
@@ -250,6 +255,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    if ( genv[i].dR < 0.4 )
 	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
         } // for pfs
+	gen[i].np = ng;
 
         genPt = g.Pt();
         genEta = g.Eta();
