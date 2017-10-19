@@ -91,7 +91,6 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::METCollection> metToken_;
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
         // edm::EDGetTokenT<pat::PackedCandidateCollection> genToken_;
-	edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenToken_;
       	edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
        
         TFile* outputFile;
@@ -132,7 +131,6 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
     pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
     //genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
-    prunedGenToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("pruned"))),
     packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
 
 {
@@ -218,16 +216,11 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //    iEvent.getByToken(genToken_, gens);
 
 
-	// EITHER THIS
-        // Pruned particles are the one containing "important" stuff
-//    edm::Handle<reco::GenParticle> gens;
-//    iEvent.getByToken(prunedGenToken_, gens);
-
 	// OR THIS
         // Packed particles are all the status 1, so usable to remake jets
         // The navigation from status 1 to pruned is possible (the other direction should be made by hand)
-//    edm::Handle<pat::PackedGenParticle> gens;
-//    iEvent.getByToken(packedGenToken_, gens);
+    edm::Handle<pat::PackedGenParticle> gens;
+    iEvent.getByToken(packedGenToken_, gens);
 
 
     for (const pat::Jet &j : *jets) {
