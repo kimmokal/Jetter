@@ -131,7 +131,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
     fatjetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets"))),
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
-    pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
+    pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands")))
     //genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
     //JOUpackedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
 
@@ -146,12 +146,12 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("jetPhi", &jetPhi, "jetPhi/F");
     jetTree->Branch("jetMass", &jetMass, "jetMass/F");
     jetTree->Branch("jetArea", &jetArea, "jetArea/F");
-
+    /*JOU
     jetTree->Branch("genPt", &genPt, "genPt/F");
     jetTree->Branch("genEta", &genEta, "genEta/F");
     jetTree->Branch("genPhi", &genPhi, "genPhi/F");
     jetTree->Branch("genMass", &genMass, "genMass/F");
-    	
+    JOU*/	
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/I");
     jetTree->Branch("lumi", &lumi, "lumi/I");
@@ -212,7 +212,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<pat::JetCollection> jets;
     iEvent.getByToken(jetToken_, jets);
     edm::Handle<pat::JetCollection> fatjets;
-    iEvent.getByToken(fatjetToken_, fatjets)
+    iEvent.getByToken(fatjetToken_, fatjets);
     edm::Handle<pat::METCollection> mets;
     iEvent.getByToken(metToken_, mets);
     edm::Handle<pat::PackedCandidateCollection> pfs;
