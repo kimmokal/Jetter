@@ -88,10 +88,11 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::TauCollection> tauToken_;
         edm::EDGetTokenT<pat::PhotonCollection> photonToken_;
         edm::EDGetTokenT<pat::JetCollection> jetToken_;
+        edm::EDGetTokenT<pat::JetCollection> fatjetToken_;
         edm::EDGetTokenT<pat::METCollection> metToken_;
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
         // edm::EDGetTokenT<pat::PackedCandidateCollection> genToken_;
-      	edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
+      	//JOUedm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
        
         TFile* outputFile;
         TTree* jetTree;
@@ -107,12 +108,12 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int run;
         unsigned int lumi;
         //unsigned int bx;
-        
+       /*JOU 
         float genPt;
         float genEta;
         float genPhi;
         float genMass;
-
+*/
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
 };
@@ -128,10 +129,11 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     tauToken_(consumes<pat::TauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
     photonToken_(consumes<pat::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
     jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+    fatjetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets"))),
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
     pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
     //genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
-    packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
+    //JOUpackedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
 
 {
     //sets the output file, tree and the parameters to be saved to the tree
@@ -167,11 +169,12 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("ng",&ngenv,"ng/I");
     //jetTree->Branch("gen", genv, "pT[ng]/F:dR[ng]/F:dTheta[ng]/F:"
     //	    "mass[ng]/F");
+    /*JOU
     jetTree->Branch("gen_pT", &gen_pT, "gen_pT[ng]/F");
     jetTree->Branch("gen_dR", &gen_dR, "gen_dR[ng]/F");
     jetTree->Branch("gen_dTheta", &gen_dTheta, "gen_dTheta[ng]/F");
     jetTree->Branch("gen_mass", &gen_mass, "gen_mass[ng]/F");
-    
+    */
 
 
 }
@@ -208,6 +211,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(tauToken_, taus);
     edm::Handle<pat::JetCollection> jets;
     iEvent.getByToken(jetToken_, jets);
+    edm::Handle<pat::JetCollection> fatjets;
+    iEvent.getByToken(fatjetToken_, fatjets)
     edm::Handle<pat::METCollection> mets;
     iEvent.getByToken(metToken_, mets);
     edm::Handle<pat::PackedCandidateCollection> pfs;
@@ -219,10 +224,11 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	// OR THIS
         // Packed particles are all the status 1, so usable to remake jets
         // The navigation from status 1 to pruned is possible (the other direction should be made by hand)
-    edm::Handle<pat::PackedGenParticle> gens;
-    iEvent.getByToken(packedGenToken_, gens);
+    //JOUedm::Handle<pat::PackedGenParticle> gens;
+    //JOUiEvent.getByToken(packedGenToken_, gens);
 
 
+    //Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce *jets with *fatjets
     for (const pat::Jet &j : *jets) {
 
       // Select
@@ -259,7 +265,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
 	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
 
-            if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
+            if ( (deltaEta > 1) && (deltaPhi > 1) ) continue;
                 
             pf_pT[np] = pf.pt();
             pf_dR[np] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
@@ -270,7 +276,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         } // for pfs
 	npfv = np;
 
-
+/*JOU
 	assert(kMaxPF > gens->size());
 	TLorentzVector g(0,0,0,0);
 	int ng(0);
@@ -299,7 +305,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         genEta = g.Eta();
         genPhi = g.Phi();
         genMass = g.M();
-
+JOU*/
         jetTree->Fill();
     } // for jets
 
