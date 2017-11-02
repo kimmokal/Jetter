@@ -284,20 +284,20 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  //           const pat::PackedCandidate &gen = (*gens)[i];
 
             float deltaEta = ((*packed)[i].eta()-j.eta());
-            float deltaPhi = std::fabs(gen.phi()-j.phi());
+            float deltaPhi = std::fabs((*packed)[i].phi()-j.phi());
 	    if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
 	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
 
             if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
                 
-            gen_pT[ng] = gen.pt();
-            gen_dR[ng] = deltaR(j.eta(), j.phi(), gen.eta(), gen.phi());
-            gen_dTheta[ng] = std::fabs(gen.theta() - j.theta());
-            gen_mass[ng] = gen.mass();
+            gen_pT[ng] = (*packed)[i].pt();
+            gen_dR[ng] = deltaR(j.eta(), j.phi(), (*packed)[i].eta(), (*packed)[i].phi());
+            gen_dTheta[ng] = std::fabs((*packed)[i].theta() - j.theta());
+            gen_mass[ng] = (*packed)[i].mass();
 	    ++ng;
 	    
 	    if ( gen_dR[i] < 0.4 )
-	      g += TLorentzVector(gen.px(), gen.py(), gen.pz(), gen.energy());
+	      g += TLorentzVector((*packed)[i].px(), (*packed)[i].py(), (*packed)[i].pz(), (*packed)[i].energy());
         } // for pfs
 	ngenv = ng;
 
