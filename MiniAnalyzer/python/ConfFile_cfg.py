@@ -27,7 +27,7 @@ process.demo = cms.EDAnalyzer('MiniAnalyzer',
     fatjets = cms.InputTag("slimmedJetsAK8"),
     mets = cms.InputTag("slimmedMETs"),
     pfCands = cms.InputTag("packedPFCandidates"),
-    genParticles = cms.InputTag("packedGenParticles"),
+    packed = cms.InputTag("packedGenParticles"),
 )
 
 
