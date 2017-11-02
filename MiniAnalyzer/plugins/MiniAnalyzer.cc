@@ -261,15 +261,15 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             const pat::PackedCandidate &pf = (*pfs)[i];
 
             float deltaEta = (pf.eta()-j.eta());
-            float deltaPhi = std::fabs(pf.phi()-j.phi());
-	    if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+            float deltaPhi = deltaPhi(pf.phi(),j.phi());
+	    //if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
 	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
 
-            if ( (deltaEta > 1) && (deltaPhi > 1) ) continue;
+            if ( (fabs(deltaEta) > 1.0) || (fabs(deltaPhi) > 1.0) ) continue;
                 
             pf_pT[np] = pf.pt();
             pf_dR[np] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
-            pf_dTheta[np] = std::fabs(pf.theta() - j.theta());
+	    pf_dTheta[np] = std::atan2(deltaPhi, deltaEta);
             pf_mass[np] = pf.mass();                        
 	    ++np;
 
@@ -284,15 +284,16 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //            const pat::PackedCandidate &gen = (*gens)[i];
 
             float deltaEta = ((*packed)[i].eta()-j.eta());
-            float deltaPhi = std::fabs((*packed)[i].phi()-j.phi());
-	    if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+            //float deltaPhi = std::fabs((*packed)[i].phi()-j.phi());
+	    //if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+	    float deltaPhi = deltaPhi((*packed)[i].phi(),j.phi());
 	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
 
-            if ( (deltaEta > 0.5) && (deltaPhi > 0.5) ) continue;
+            if ( (fabs(deltaEta) > 1.0) || (fabs(deltaPhi) > 1.0) ) continue;
                 
             gen_pT[ng] = (*packed)[i].pt();
             gen_dR[ng] = deltaR(j.eta(), j.phi(), (*packed)[i].eta(), (*packed)[i].phi());
-            gen_dTheta[ng] = std::fabs((*packed)[i].theta() - j.theta());
+	    gen_dTheta[ng] = std::atan2(deltaPhi, deltaEta);
             gen_mass[ng] = (*packed)[i].mass();
 	    ++ng;
 	    
