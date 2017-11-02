@@ -277,11 +277,11 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	npfv = np;
 
 
-	assert(kMaxPF > gens->size());
+//	assert(kMaxPF > gens->size());
 	TLorentzVector g(0,0,0,0);
 	int ng(0);
-        for (unsigned int i = 0; i != gens->size(); ++i) {
- //           const pat::PackedCandidate &gen = (*gens)[i];
+        for (unsigned int i = 0; i != packed->size(); ++i) {
+//            const pat::PackedCandidate &gen = (*gens)[i];
 
             float deltaEta = ((*packed)[i].eta()-j.eta());
             float deltaPhi = std::fabs((*packed)[i].phi()-j.phi());
