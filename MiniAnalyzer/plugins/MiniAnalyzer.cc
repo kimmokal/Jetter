@@ -98,21 +98,21 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         TTree* jetTree;
         
         //defining the jet specific parameters
-        float jetPt;
-        float jetEta;
-        float jetPhi;
-        float jetMass;
-        float jetArea;
+        Float_t jetPt;
+        Float_t jetEta;
+        Float_t jetPhi;
+        Float_t jetMass;
+        Float_t jetArea;
 
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
         //unsigned int bx;
         
-        float genPt;
-        float genEta;
-        float genPhi;
-        float genMass;
+        Float_t genPt;
+        Float_t genEta;
+        Float_t genPhi;
+        Float_t genMass;
 
         //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
