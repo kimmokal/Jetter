@@ -41,13 +41,21 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 
+//parton
+#include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/JetReco/interface/GenJetCollection.h"
+
+//hadron-level definition
+#include "SimDataFormats/JetMatching/interface/JetFlavourInfo.h"
+#include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"
+
+
 //ROOT libraries
 #include "TTree.h"
 #include "TFile.h"
 #include "TLorentzVector.h"
 
 
-//#include "Jetter/MiniAnalyzer/plugins/MiniAnalyzer.h"
 
 using namespace std;
 
@@ -74,9 +82,6 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         Float_t gen_dTheta[kMaxPF];
         Float_t gen_mass[kMaxPF];
 
-        //static PFV pfv[kMaxPF];
-	//static PFV genv[kMaxPF];
-
 
     private:
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -91,9 +96,10 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::JetCollection> fatjetToken_;
         edm::EDGetTokenT<pat::METCollection> metToken_;
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
-        // edm::EDGetTokenT<pat::PackedCandidateCollection> genToken_;
       	edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
-       
+		
+		vector<LorentzVector> mGenJets;       
+
         TFile* outputFile;
         TTree* jetTree;
         
@@ -102,19 +108,19 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         Float_t jetEta;
         Float_t jetPhi;
         Float_t jetMass;
-        Float_t jetArea;
+        
 
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
-        //unsigned int bx;
         
         Float_t genPt;
         Float_t genEta;
         Float_t genPhi;
         Float_t genMass;
+        
+        Float_t pthat;
 
-        //typedef struct {Float_t pT,deltaR,deltaTheta,mass,type;} PF;
 
 };
 
@@ -132,30 +138,38 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     fatjetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets"))),
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
     pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
-    //genToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("genParticles")))
     packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
+
+    mGenJetsName(mayConsume<GenJetCollection>(cfg.getUntrackedParameter<edm::InputTag>("genjets",edm::InputTag("")))),
+
+
 
 {
     //sets the output file, tree and the parameters to be saved to the tree
 
+    mMaxY              = cfg.getParameter<double>                    ("maxY");
+    mMinGenPt          = cfg.getUntrackedParameter<double>           ("minGenPt",30);
+
+
+
     outputFile = new TFile("nanotuple_particles.root","recreate");
-    jetTree = new TTree("jetTree", "A simplified jet tree");
+    jetTree = new TTree("jetTree", "Jet tree");
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
     jetTree->Branch("jetEta", &jetEta, "jetEta/F");
     jetTree->Branch("jetPhi", &jetPhi, "jetPhi/F");
     jetTree->Branch("jetMass", &jetMass, "jetMass/F");
-    jetTree->Branch("jetArea", &jetArea, "jetArea/F");
     
     jetTree->Branch("genPt", &genPt, "genPt/F");
     jetTree->Branch("genEta", &genEta, "genEta/F");
     jetTree->Branch("genPhi", &genPhi, "genPhi/F");
     jetTree->Branch("genMass", &genMass, "genMass/F");
-    	
+    
+    jetTree->Branch("pthat", &pthat, "pthat/F");
+    
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/I");
     jetTree->Branch("lumi", &lumi, "lumi/I");
-    //jetTree->Branch("bx", &bx, "bx/l");
 
 
     jetTree->Branch("np",&npfv,"np/I");
@@ -197,7 +211,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     using namespace pat;
 
 
-    //kaikki partikkelit läpi
+
 
     edm::Handle<reco::VertexCollection> vertices;
     iEvent.getByToken(vtxToken_, vertices);
@@ -217,100 +231,151 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(metToken_, mets);
     edm::Handle<pat::PackedCandidateCollection> pfs;
     iEvent.getByToken(pfToken_, pfs);  
-//    edm::Handle<pat::PackedCandidateCollection> gens;
-//    iEvent.getByToken(genToken_, gens);
-
-
-	// OR THIS
         // Packed particles are all the status 1, so usable to remake jets
         // The navigation from status 1 to pruned is possible (the other direction should be made by hand)
     edm::Handle<edm::View<pat::PackedGenParticle> > packed;
     iEvent.getByToken(packedGenToken_, packed);
 
+    edm::Handle<GenJetCollection> genjets;
+    event.getByToken(mGenJetsName,genjets);
+    edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
+    event.getByToken(jetFlavourInfosToken_, theJetFlavourInfos );
 
-    //Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce *jets with *fatjets
+	//Genjet parton flavor loop
+	for(GenJetCollection::const_iterator i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
+    	if (i_gen->pt() > 30 && fabs(i_gen->y()) < mMaxY) {
+    		int FlavourGen = getMatchedPartonGen(event,i_gen);
+    		if(FlavourGen<-100) cout<<FlavourGen<<" "<<i_gen->pt()<<" "<<i_gen->eta()<<" "<<i_gen->phi()<<endl;
+    		GenFlavour.push_back(FlavourGen);
+
+	} //for genjet parton flavor
+
+
+	//Genjet hadron flavor loop
+    for ( reco::JetFlavourInfoMatchingCollection::const_iterator j = theJetFlavourInfos->begin();j != theJetFlavourInfos->end();++j ) {
+    	reco::JetFlavourInfo aInfo = (*j).second;
+    	int FlavourGenHadron = aInfo.getHadronFlavour();
+      	if(FlavourGenHadron==5) cout<<FlavourGenHadron<<" "<<aJet->pt()<<" "<<aJet->eta()<<" "<<aJet->phi()<<" HADRONFLAV"<<endl;
+      	GenHadronFlavour.push_back(FlavourGenHadron);
+
+    } //for genjet hadron flavor
+
+
+
+    // Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce *jets with *fatjets
     for (const pat::Jet &j : *jets) {
 
-      // Select
-      if (j.pt() < 20) continue;
-      if (fabs(j.eta()) > 1.3) continue;
+      	// Select
+      	if (j.pt() < 20) continue;
+      	if (fabs(j.eta()) > 1.3) continue;
 
         //adding jet parameters to jet-based tree
         jetPt = j.pt();
         jetEta = j.eta();
         jetPhi = j.phi();
         jetMass = j.mass();
-        //et = j.et();
         
-
-        //adding event information to jet-based tree
-        event = iEvent.id().event();
-        run = iEvent.id().run();
-        lumi = iEvent.id().luminosityBlock();
-        //bx = iEvent.id().bx();
-
-	//particle loop starts here
-
-//        for (const pat::PackedCandidate &pf : *pfs) {
-
-	if (!(kMaxPF < pfs->size()))
-//	  cout << "pfs->size(): " << pfs->size() << endl << flush;
-	assert(kMaxPF > pfs->size());
-	int np(0);
-        for (unsigned int i = 0; i != pfs->size(); ++i) {
-            const pat::PackedCandidate &pf = (*pfs)[i];
-
-            float deltaEta = (pf.eta()-j.eta());
-            float deltaPhi = deltaPhi(pf.phi(),j.phi());
-	    //if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
-	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
-
-            if ( (fabs(deltaEta) > 1.0) || (fabs(deltaPhi) > 1.0) ) continue;
-                
-            pf_pT[np] = pf.pt();
-            pf_dR[np] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
-	    pf_dTheta[np] = std::atan2(deltaPhi, deltaEta);
-            pf_mass[np] = pf.mass();                        
-	    ++np;
-
-        } // for pfs
-	npfv = np;
-
-
-//	assert(kMaxPF > gens->size());
-	TLorentzVector g(0,0,0,0);
-	int ng(0);
-        for (unsigned int i = 0; i != packed->size(); ++i) {
-//            const pat::PackedCandidate &gen = (*gens)[i];
-
-            float deltaEta = ((*packed)[i].eta()-j.eta());
-            //float deltaPhi = std::fabs((*packed)[i].phi()-j.phi());
-	    //if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
-	    float deltaPhi = deltaPhi((*packed)[i].phi(),j.phi());
-	    // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
-
-            if ( (fabs(deltaEta) > 1.0) || (fabs(deltaPhi) > 1.0) ) continue;
-                
-            gen_pT[ng] = (*packed)[i].pt();
-            gen_dR[ng] = deltaR(j.eta(), j.phi(), (*packed)[i].eta(), (*packed)[i].phi());
-	    gen_dTheta[ng] = std::atan2(deltaPhi, deltaEta);
-            gen_mass[ng] = (*packed)[i].mass();
-	    ++ng;
-	    
-	    if ( gen_dR[i] < 0.4 )
-	      g += TLorentzVector((*packed)[i].px(), (*packed)[i].py(), (*packed)[i].pz(), (*packed)[i].energy());
-        } // for pfs
-	ngenv = ng;
-
+        //adding MCjet parameters
         genPt = g.Pt();
         genEta = g.Eta();
         genPhi = g.Phi();
         genMass = g.M();
 
-        jetTree->Fill();
+        //adding event information to jet-based tree
+        event = iEvent.id().event();
+        run = iEvent.id().run();
+        lumi = iEvent.id().luminosityBlock();
+       
+
+		//particle loop starts here
+		if (!(kMaxPF < pfs->size()))
+		assert(kMaxPF > pfs->size());
+		int np(0);
+        for (unsigned int i = 0; i != pfs->size(); ++i) {
+            const pat::PackedCandidate &pf = (*pfs)[i];
+
+            float deltaEta = (pf.eta()-j.eta());
+            float deltaPhi = deltaPhi(pf.phi(),j.phi());
+	    	//if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+	    	// later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
+
+            if ( (fabs(deltaEta) > 1.0) || (fabs(deltaPhi) > 1.0) ) continue;
+                
+            pf_pT[np] = pf.pt();
+            pf_dR[np] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+	    	pf_dTheta[np] = std::atan2(deltaPhi, deltaEta);
+            pf_mass[np] = pf.mass();                        
+	    	++np;
+
+        } // for pfs
+	
+		npfv = np;
+
+		TLorentzVector g(0,0,0,0);
+		int ng(0);
+        for (unsigned int i = 0; i != packed->size(); ++i) {
+
+            float deltaEta = ((*packed)[i].eta()-j.eta());
+            //float deltaPhi = std::fabs((*packed)[i].phi()-j.phi());
+	    	//if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+	    	float deltaPhi = deltaPhi((*packed)[i].phi(),j.phi());
+	    	// later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
+
+            if ( (fabs(deltaEta) > 1.0) || (fabs(deltaPhi) > 1.0) ) continue;
+                
+            gen_pT[ng] = (*packed)[i].pt();
+            gen_dR[ng] = deltaR(j.eta(), j.phi(), (*packed)[i].eta(), (*packed)[i].phi());
+	    	gen_dTheta[ng] = std::atan2(deltaPhi, deltaEta);
+            gen_mass[ng] = (*packed)[i].mass();
+	    	++ng;
+	    
+	    	if ( gen_dR[i] < 0.4 )
+	    	g += TLorentzVector((*packed)[i].px(), (*packed)[i].py(), (*packed)[i].pz(), (*packed)[i].energy());
+        
+        } // for packed gen pfs
+	
+		ngenv = ng;
+
+	    jetTree->Fill();
+
     } // for jets
 
 } // analyze
+
+
+///// Matching Flavour //////
+int ProcessedTreeProducerBTag::getMatchedPartonGen(edm::Event const& event,GenJetCollection::const_iterator i_gen)
+{
+
+  int jetFlavour=-100;
+  bool switchB=0;
+  bool switchC=0;
+
+  edm::Handle<reco::GenParticleCollection> genParticles;
+  event.getByToken(mgenParticles, genParticles);
+
+  for (size_t i = 0; i < genParticles->size (); ++i) {
+      const GenParticle & genIt = (*genParticles)[i];
+      int pdgId = genIt.pdgId();
+      double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
+      double DeltaRmin=0.3;
+      if (DeltaR < DeltaRmin ){
+
+	DeltaRmin=DeltaR;
+	if(abs(pdgId)==5){ jetFlavour=5; switchB=true;}
+	if(abs(pdgId)==4){ jetFlavour=4; switchC=true;}
+	if(abs(pdgId)<=3 && abs(pdgId)>=1){ jetFlavour=1; }
+	if(abs(pdgId)==21){ jetFlavour=21; }
+      }
+      
+      if (switchB) {jetFlavour=5;}
+      if (switchC && !switchB) {jetFlavour=4;}
+
+  }
+
+  return jetFlavour;
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MiniAnalyzer);

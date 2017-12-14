@@ -4,7 +4,8 @@ This project is a CMSSW module producing mostly flat tuples from run 2 data/MC
 
 (A little bit under construction)
 
-So far the code works on lxplus and CMSSW_8_0_6, and requires grid permissions to access data ```(voms-proxy-init -voms cms)```
+So far the code works on lxplus and CMSSW_8_0_6, and requires grid permissions to access data:
+```voms-proxy-init -voms cms```
 
 
 ## Setting up
@@ -46,3 +47,40 @@ And to view the tuples in ROOT
     TBrowser a
 ```
 from there use the graphical interface.
+
+
+## Content of the tuples
+
+There are five different "groups" of data variables that are stored in the jet-based tuples. 
+
+| Jet | GenJet | Particle Flow candidate (PF) | GenParticle | Event |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| jetPt | genPt | pf_pT[np] | gen_pT[ng] | event |
+| jetEta | getEta | pf_dR[np] | gen_dR[ng] | run |
+| jetPhi | genPhi| pf_dTheta[np] | gen_dTheta[ng] | lumi |
+| jetMass | genMass| pf_mass[np] | gen_mass[ng] |
+| | | npfv | ngenv |
+
+As a general rule, variable with underscore refers to particles (to avoid confusion between the two get variables)
+
+
+
+## Unfinished features
+
+[ ] ```pdg_id``` for gen particles and condensed id for 
+```
+charged hadron = pi+/pi- 211/-211
+neutral hadron -> 130
+photon -> 111
+```
+[ ] Vertex index (pf_ivtx)
+	- Comparison of tracks, save the ivtx if a match for particle is found. Default value -1 (no vertex)
+```
+0 = 1st primary
+>=1 : pu_vertex
+-1 : no vertex
+```
+
+[ ] Accounting for weight/pt-hat
+
+[ ] Not properly tested: Jet flavors for genjets

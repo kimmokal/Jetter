@@ -15,6 +15,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
 	'/store/mc/RunIISummer16MiniAODv2/AToZhToLLTauTau_M-340_13TeV_madgraph_4f_LO/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/1C5025FA-9ABE-E611-B244-B083FECF83AB.root'
 	)
+	#supposed to use /RunIISummer16MiniAODv2-PUFlat0to70_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v4-v1/MINIAODSIM but unable to get proper path rn, path provided was FWlite PATH
 )
 
 process.demo = cms.EDAnalyzer('MiniAnalyzer',
@@ -28,6 +29,8 @@ process.demo = cms.EDAnalyzer('MiniAnalyzer',
     mets = cms.InputTag("slimmedMETs"),
     pfCands = cms.InputTag("packedPFCandidates"),
     packed = cms.InputTag("packedGenParticles"),
+
+
 )
 
 
