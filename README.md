@@ -67,13 +67,13 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 
 ## Unfinished features
 
-[ ] ```pdg_id``` for gen particles and condensed id for 
+- [ ] ```pdg_id``` for gen particles and condensed id for 
 ```
 charged hadron = pi+/pi- 211/-211
 neutral hadron -> 130
 photon -> 111
 ```
-[ ] Vertex index (pf_ivtx)
+- [ ] Vertex index (pf_ivtx)
 	- Comparison of tracks, save the ivtx if a match for particle is found. Default value -1 (no vertex)
 ```
 0 = 1st primary
@@ -81,6 +81,6 @@ photon -> 111
 -1 : no vertex
 ```
 
-[ ] Accounting for weight/pt-hat
+- [ ] Accounting for weight/pt-hat
 
-[ ] Not properly tested: Jet flavors for genjets
+- [ ] Not properly tested: Jet flavors for genjets
