@@ -98,8 +98,6 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
       	edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
 		
-		vector<LorentzVector> mGenJets;       
-
         TFile* outputFile;
         TTree* jetTree;
         
@@ -138,19 +136,16 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     fatjetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets"))),
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
     pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
-    packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed")))
-
+    packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed"))),
     mGenJetsName(mayConsume<GenJetCollection>(cfg.getUntrackedParameter<edm::InputTag>("genjets",edm::InputTag("")))),
 
 
-
 {
-    //sets the output file, tree and the parameters to be saved to the tree
 
     mMaxY              = cfg.getParameter<double>                    ("maxY");
     mMinGenPt          = cfg.getUntrackedParameter<double>           ("minGenPt",30);
 
-
+    //sets the output file, tree and the parameters to be saved to the tree
 
     outputFile = new TFile("nanotuple_particles.root","recreate");
     jetTree = new TTree("jetTree", "Jet tree");
@@ -204,14 +199,12 @@ MiniAnalyzer::~MiniAnalyzer()
 
 
 void
-MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     using namespace reco;
     using namespace pat;
 
-
-
+    vector<LorentzVector> mGenJets;       
 
     edm::Handle<reco::VertexCollection> vertices;
     iEvent.getByToken(vtxToken_, vertices);
@@ -237,9 +230,9 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(packedGenToken_, packed);
 
     edm::Handle<GenJetCollection> genjets;
-    event.getByToken(mGenJetsName,genjets);
+    iEvent.getByToken(mGenJetsName,genjets);
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
-    event.getByToken(jetFlavourInfosToken_, theJetFlavourInfos );
+    iEvent.getByToken(jetFlavourInfosToken_, theJetFlavourInfos );
 
 	//Genjet parton flavor loop
 	for(GenJetCollection::const_iterator i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
@@ -247,17 +240,18 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     		int FlavourGen = getMatchedPartonGen(event,i_gen);
     		if(FlavourGen<-100) cout<<FlavourGen<<" "<<i_gen->pt()<<" "<<i_gen->eta()<<" "<<i_gen->phi()<<endl;
     		GenFlavour.push_back(FlavourGen);
-
+    	}
 	} //for genjet parton flavor
 
 
 	//Genjet hadron flavor loop
     for ( reco::JetFlavourInfoMatchingCollection::const_iterator j = theJetFlavourInfos->begin();j != theJetFlavourInfos->end();++j ) {
-    	reco::JetFlavourInfo aInfo = (*j).second;
-    	int FlavourGenHadron = aInfo.getHadronFlavour();
-      	if(FlavourGenHadron==5) cout<<FlavourGenHadron<<" "<<aJet->pt()<<" "<<aJet->eta()<<" "<<aJet->phi()<<" HADRONFLAV"<<endl;
-      	GenHadronFlavour.push_back(FlavourGenHadron);
-
+    	if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
+	    	reco::JetFlavourInfo aInfo = (*j).second;
+	    	int FlavourGenHadron = aInfo.getHadronFlavour();
+	      	if(FlavourGenHadron==5) cout<<FlavourGenHadron<<" "<<aJet->pt()<<" "<<aJet->eta()<<" "<<aJet->phi()<<" HADRONFLAV"<<endl;
+	      	GenHadronFlavour.push_back(FlavourGenHadron);
+      	}
     } //for genjet hadron flavor
 
 
@@ -291,6 +285,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if (!(kMaxPF < pfs->size()))
 		assert(kMaxPF > pfs->size());
 		int np(0);
+
         for (unsigned int i = 0; i != pfs->size(); ++i) {
             const pat::PackedCandidate &pf = (*pfs)[i];
 
@@ -313,6 +308,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		TLorentzVector g(0,0,0,0);
 		int ng(0);
+
         for (unsigned int i = 0; i != packed->size(); ++i) {
 
             float deltaEta = ((*packed)[i].eta()-j.eta());
