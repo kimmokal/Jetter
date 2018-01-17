@@ -28,7 +28,7 @@ cd WorkingArea
 cmsrel CMSSW_8_0_6
 cd CMSSW_8_0_6/src
 cmsenv
-git clone https://github.com/ekuruusu/Jetter/
+git clone https://github.com/kimmokal/Jetter/
 scram b
 cd Jetter/MiniAnalyzer
 ```
