@@ -238,24 +238,26 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     //edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
     //iEvent.getByToken(jetFlavourInfosToken_, theJetFlavourInfos);
 
+/*
 	//Genjet parton flavor loop
-//	for(GenJetCollection::const_iterator i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
-//    	if (i_gen->pt() > 30 && (fabs(i_gen->y()) < mMaxY)) {
+	for(GenJetCollection::const_iterator i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
+    	if (i_gen->pt() > 30 && (fabs(i_gen->y()) < mMaxY)) {
     		//int FlavourGen = getMatchedPartonGen(event, i_gen); TO DO!!
     		//if(FlavourGen < -100) cout<<FlavourGen<<" "<<i_gen->pt()<<" "<<i_gen->eta()<<" "<<i_gen->phi()<<endl; TO DO!!
     		//GenFlavour.push_back(FlavourGen); TO DO!!
-//    	}
+    	}
 
 
 	//Genjet hadron flavor loop
-    //for ( reco::JetFlavourInfoMatchingCollection::const_iterator j = theJetFlavourInfos->begin(); j != theJetFlavourInfos->end(); ++j ) {
-    //	if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
-//	    	reco::JetFlavourInfo aInfo = (*j).second;
-//	    	int FlavourGenHadron = aInfo.getHadronFlavour();
-//	      	if(FlavourGenHadron==5) cout<<FlavourGenHadron<<" "<<aJet->pt()<<" "<<aJet->eta()<<" "<<aJet->phi()<<" HADRONFLAV"<<endl;
-//	      	GenHadronFlavour.push_back(FlavourGenHadron);
-//      	}
-//    } //for genjet hadron flavor
+        for ( reco::JetFlavourInfoMatchingCollection::const_iterator j = theJetFlavourInfos->begin(); j != theJetFlavourInfos->end(); ++j ) {
+    	if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
+	    	reco::JetFlavourInfo aInfo = (*j).second;
+	    	int FlavourGenHadron = aInfo.getHadronFlavour();
+	      	if(FlavourGenHadron==5) cout<<FlavourGenHadron<<" "<<aJet->pt()<<" "<<aJet->eta()<<" "<<aJet->phi()<<" HADRONFLAV"<<endl;
+	      	GenHadronFlavour.push_back(FlavourGenHadron);
+         	}
+        } //for genjet hadron flavor
+*/
 //	}
 
 
@@ -340,7 +342,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     } // for jets
 
 
-
+/*
     // Decide on using AK4 or AK8 genjet algorithm. If AK8 -> replace *genJets with *genFatjets (not yet implemented)
     for (const pat::Jet &gj : *genjets) {
 
@@ -420,7 +422,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	    jetTree->Fill();
 
     } // for genjets
-
+*/
 
 } // analyze
 
