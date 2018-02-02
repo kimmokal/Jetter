@@ -13,9 +13,11 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #Select the MiniAOD file to process
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-	'/store/mc/RunIISummer16MiniAODv2/AToZhToLLTauTau_M-340_13TeV_madgraph_4f_LO/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/1C5025FA-9ABE-E611-B244-B083FECF83AB.root'
+	# Without pileup:
+	'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/NoPU_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/DCD55D97-61F0-E611-9C1B-FA163EAD13C1.root'
+	# With pileup:
+	# '/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/100000/08278E4E-E4EF-E611-8BD7-FA163E3ABA64.root'
 	)
-	#supposed to use /RunIISummer16MiniAODv2-PUFlat0to70_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v4-v1/MINIAODSIM but unable to get proper path rn, path provided was FWlite PATH
 )
 
 process.demo = cms.EDAnalyzer('MiniAnalyzer',

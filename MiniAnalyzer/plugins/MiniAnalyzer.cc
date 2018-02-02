@@ -109,11 +109,22 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         Float_t jetEta;
         Float_t jetPhi;
         Float_t jetMass;
-
+	
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
         
+	unsigned int partonFlav;
+	unsigned int hadronFlav;
+	unsigned int physFlav;
+
+	unsigned int isPartonUDS;
+	unsigned int isPartonG;
+	unsigned int isPartonOther;
+	unsigned int isPhysUDS;
+	unsigned int isPhysG;
+	unsigned int isPhysOther;
+
         Float_t genPt;
         Float_t genEta;
         Float_t genPhi;
@@ -169,6 +180,17 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/I");
     jetTree->Branch("lumi", &lumi, "lumi/I");
+
+    jetTree->Branch("partonFlav", &partonFlav, "partonFlav/I");
+    jetTree->Branch("hadronFlav", &hadronFlav, "hadronFlav/I");
+    jetTree->Branch("physFlav", &physFlav, "physFlav/I");
+
+    jetTree->Branch("isPartonUDS", &isPartonUDS, "isPartonUDS/I");
+    jetTree->Branch("isPartonG", &isPartonG, "isPartonG/I");
+    jetTree->Branch("isPartonOther", &isPartonOther, "isPartonOther/I");
+    jetTree->Branch("isPhysUDS", &isPhysUDS, "isPhysUDS/I");
+    jetTree->Branch("isPhysG", &isPhysG, "isPhysG/I");
+    jetTree->Branch("isPhysOther", &isPhysOther, "isPhysOther/I");
 
 
     jetTree->Branch("np",&npfv,"np/I");
@@ -273,7 +295,39 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         jetEta = j.eta();
         jetPhi = j.phi();
         jetMass = j.mass();
-        
+
+	//assign flavours for each jet
+	partonFlav = abs(j.partonFlavour());
+	hadronFlav = abs(j.hadronFlavour());
+        physFlav = 0;
+	if (j.genParton()) physFlav = abs(j.genParton()->pdgId());
+
+	isPartonUDS = 0;
+	isPartonG = 0;
+	isPartonOther = 0;
+	isPhysUDS = 0;
+	isPhysG = 0;
+	isPhysOther = 0;
+
+	//parton definition for flavours
+	if(partonFlav == 1 || partonFlav == 2 || partonFlav == 3) {
+		isPartonUDS = 1;
+	} else if(partonFlav == 21) {
+		isPartonG = 1;
+	} else {
+		isPartonOther = 1;
+	}
+
+	//physics definition for flavours
+	if(physFlav == 1 || physFlav == 2 || physFlav == 3) {
+		isPhysUDS = 1;
+	} else if(physFlav == 21) {
+		isPhysG = 1;
+	} else {
+		isPhysOther = 1;
+	}
+
+
         //adding MCjet parameters; TO DO:
         // genPt = g.Pt();
         // genEta = g.Eta();
@@ -344,7 +398,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 /*
     // Decide on using AK4 or AK8 genjet algorithm. If AK8 -> replace *genJets with *genFatjets (not yet implemented)
-    for (const pat::Jet &gj : *genjets) {
+    for (const pat::GenJet &gj : *genjets) {
 
       	// Select
       	if (gj.pt() < 20) continue;
