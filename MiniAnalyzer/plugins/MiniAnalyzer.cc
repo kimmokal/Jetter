@@ -328,11 +328,13 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	}
 
 
-        //adding MCjet parameters; TO DO:
-        // genPt = g.Pt();
-        // genEta = g.Eta();
-        // genPhi = g.Phi();
-        // genMass = g.M();
+        //adding MCjet parameters
+	if(j.genJet()) {
+		genPt = j.genJet()->pt();
+		genEta = j.genJet()->eta();
+		genPhi = j.genJet()->phi();
+		genMass = j.genJet()->mass();
+	}
 
         //adding event information to jet-based tree
         event = iEvent.id().event();
