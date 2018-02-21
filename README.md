@@ -25,8 +25,8 @@ ssh -Y CERNusername@lxplus.cern.ch
 
 mkdir WorkingArea
 cd WorkingArea
-cmsrel CMSSW_8_0_6
-cd CMSSW_8_0_6/src
+cmsrel CMSSW_8_0_26
+cd CMSSW_8_0_26/src
 cmsenv
 git clone https://github.com/kimmokal/Jetter/
 scram b
