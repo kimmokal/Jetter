@@ -24,7 +24,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Math/interface/deltaR.h"
-
+#include "DataFormats/Common/interface/ValueMap.h"
 
 //MiniAOD PAT libraries
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -100,6 +100,13 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<pat::PackedCandidateCollection> pfToken_;
       	edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedGenToken_;
 	edm::EDGetTokenT<reco::GenJetCollection> EDMGenJetsToken_;
+
+        edm::EDGetTokenT<edm::ValueMap<float> > qglToken_;
+        edm::EDGetTokenT<edm::ValueMap<float> > ptDToken_;
+        edm::EDGetTokenT<edm::ValueMap<float> > axis2Token_;
+        edm::EDGetTokenT<edm::ValueMap<int>   > multToken_;
+
+	std::string t_qgtagger;
 		
         TFile* outputFile;
         TTree* jetTree;
@@ -109,6 +116,16 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         Float_t jetEta;
         Float_t jetPhi;
         Float_t jetMass;
+
+	Float_t jetRawPt;
+	Float_t jetRawEta;
+	Float_t jetRawPhi;
+	Float_t jetRawMass;
+
+	unsigned int jetChargedHadronMult;
+	unsigned int jetNeutralHadronMult;
+	unsigned int jetChargedMult;
+	unsigned int jetNeutralMult;
 	
         unsigned int event;
         unsigned int run;
@@ -135,6 +152,11 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 	Float_t mMaxY;
 	Float_t mMinGenPt;
 
+	//quark-gluon stuff
+	float jetQGl;
+	float QG_ptD;
+	float QG_axis2;
+	unsigned int QG_mult;
 
 };
 
@@ -153,7 +175,11 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
     pfToken_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
     packedGenToken_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packed"))),
-    EDMGenJetsToken_(consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets")))
+    EDMGenJetsToken_(consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets"))),
+    qglToken_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"))),
+    ptDToken_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"))),
+    axis2Token_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"))),
+    multToken_(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult")))
 
 {
 
@@ -162,14 +188,24 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("nanotuple_particles.root","recreate");
+    outputFile = new TFile("nanotuplesPU.root","recreate");
     jetTree = new TTree("jetTree", "Jet tree");
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
     jetTree->Branch("jetEta", &jetEta, "jetEta/F");
     jetTree->Branch("jetPhi", &jetPhi, "jetPhi/F");
     jetTree->Branch("jetMass", &jetMass, "jetMass/F");
-    
+
+    jetTree->Branch("jetRawPt", &jetRawPt, "jetRawPt/F");
+    jetTree->Branch("jetRawEta", &jetRawEta, "jetRawEta/F");
+    jetTree->Branch("jetRawPhi", &jetRawPhi, "jetRawPhi/F");
+    jetTree->Branch("jetRawMass", &jetRawMass, "jetRawMass/F");
+
+    jetTree->Branch("jetChargedHadronMult", &jetChargedHadronMult, "jetChargedHadronMult/I");
+    jetTree->Branch("jetNeutralHadronMult", &jetNeutralHadronMult, "jetNeutralHadronMult/I");
+    jetTree->Branch("jetChargedMult", &jetChargedMult, "jetChargedMult/I");    
+    jetTree->Branch("jetNeutralMult", &jetNeutralMult, "jetNeutralMult/I");
+
     jetTree->Branch("genPt", &genPt, "genPt/F");
     jetTree->Branch("genEta", &genEta, "genEta/F");
     jetTree->Branch("genPhi", &genPhi, "genPhi/F");
@@ -184,6 +220,11 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("partonFlav", &partonFlav, "partonFlav/I");
     jetTree->Branch("hadronFlav", &hadronFlav, "hadronFlav/I");
     jetTree->Branch("physFlav", &physFlav, "physFlav/I");
+
+    jetTree->Branch("jetQGl", &jetQGl, "jetQGl/F");
+    jetTree->Branch("QG_ptD", &QG_ptD, "QG_ptD/F");
+    jetTree->Branch("QG_axis2", &QG_axis2, "QG_axis2/F");
+    jetTree->Branch("QG_mult", &QG_mult, "QG_mult/I");
 
     jetTree->Branch("isPartonUDS", &isPartonUDS, "isPartonUDS/I");
     jetTree->Branch("isPartonG", &isPartonG, "isPartonG/I");
@@ -255,6 +296,15 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     edm::Handle<edm::View<pat::PackedGenParticle> > packed;
     iEvent.getByToken(packedGenToken_, packed);
 
+    edm::Handle<edm::ValueMap<float>> qglHandle;
+    iEvent.getByToken(qglToken_, qglHandle);
+    edm::Handle<edm::ValueMap<float>> ptDHandle;
+    iEvent.getByToken(ptDToken_, ptDHandle);
+    edm::Handle<edm::ValueMap<float>> axis2Handle;
+    iEvent.getByToken(axis2Token_, axis2Handle);
+    edm::Handle<edm::ValueMap<int>> multHandle;
+    iEvent.getByToken(multToken_, multHandle);
+
     edm::Handle<reco::GenJetCollection> genJets;
     iEvent.getByToken(EDMGenJetsToken_, genJets);
     //edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
@@ -283,8 +333,12 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 //	}
 
 
-    // Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce *jets with *fatjets
-    for (const pat::Jet &j : *jets) {
+    // Loop over the jets
+    int iJetRef = -1;
+    // Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce jets with fatjets
+    for(pat::JetCollection::const_iterator jetIt = jets->begin(); jetIt!=jets->end(); ++jetIt) {
+	const pat::Jet &j = *jetIt;
+	++iJetRef;
 
       	// Select
       	if (j.pt() < 20) continue;
@@ -295,6 +349,16 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         jetEta = j.eta();
         jetPhi = j.phi();
         jetMass = j.mass();
+	
+	jetRawPt = j.correctedJet("Uncorrected").pt();
+	jetRawEta = j.correctedJet("Uncorrected").eta();
+	jetRawPhi = j.correctedJet("Uncorrected").phi();
+	jetRawMass = j.correctedJet("Uncorrected").mass();
+
+	jetChargedHadronMult = j.chargedHadronMultiplicity();
+	jetNeutralHadronMult = j.neutralHadronMultiplicity();
+	jetChargedMult = j.chargedMultiplicity();
+	jetNeutralMult = j.neutralMultiplicity();
 
 	//assign flavours for each jet
 	partonFlav = abs(j.partonFlavour());
@@ -327,7 +391,16 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 		isPhysOther = 1;
 	}
 
+	edm::RefToBase<pat::Jet> jetRef(edm::Ref<pat::JetCollection>(jets, iJetRef));
+        jetQGl = (*qglHandle)[jetRef];
+	QG_ptD = (*ptDHandle)[jetRef];
+	QG_axis2 = (*axis2Handle)[jetRef];
+	QG_mult = (*multHandle)[jetRef];
 
+	genPt = 0;
+	genEta = 0;
+	genPhi = 0;
+	genMass = 0;
         //adding MCjet parameters
 	if(j.genJet()) {
 		genPt = j.genJet()->pt();
@@ -397,88 +470,6 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     } // for jets
 
-
-/*
-    // Decide on using AK4 or AK8 genjet algorithm. If AK8 -> replace *genJets with *genFatjets (not yet implemented)
-    for (const pat::GenJet &gj : *genjets) {
-
-      	// Select
-      	if (gj.pt() < 20) continue;
-      	if (fabs(gj.eta()) > 1.3) continue;
-
-        //adding jet parameters to jet-based tree
-        // jetPt = j.pt();
-        // jetEta = j.eta();
-        // jetPhi = j.phi();
-        // jetMass = j.mass();
-        
-        //adding MCjet parameters; TO DO:
-        genPt = gj.Pt();
-        genEta = gj.Eta();
-        genPhi = gj.Phi();
-        genMass = gj.M();
-
-        //adding event information to jet-based tree
-        event = iEvent.id().event();
-        run = iEvent.id().run();
-        lumi = iEvent.id().luminosityBlock();
-       
-
-		//particle loop starts here
-		if (!(kMaxPF < pfs->size()))
-		assert(kMaxPF > pfs->size());
-		int np(0);
-
-        for (unsigned int i = 0; i != pfs->size(); ++i) {
-            const pat::PackedCandidate &pf = (*pfs)[i];
-
-            float deltaEta = (pf.eta()-gj.eta());
-            float DeltaPhi = deltaPhi(pf.phi(),gj.phi());
-	    	//if (DeltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
-	    	// later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(g);
-
-            if ( (fabs(deltaEta) > 1.0) || (fabs(DeltaPhi) > 1.0) ) continue;
-                
-            pf_pT[np] = pf.pt();
-            pf_dR[np] = deltaR(g.eta(), gj.phi(), pf.eta(), pf.phi());
-            pf_dTheta[np] = std::atan2(DeltaPhi, deltaEta);
-            pf_mass[np] = pf.mass();                        
-	    ++np;
-
-        } // for pfs
-	
-		npfv = np;
-
-		TLorentzVector g(0,0,0,0);
-		int ng(0);
-
-        for (unsigned int i = 0; i != packed->size(); ++i) {
-
-            float deltaEta = ((*packed)[i].eta()-gj.eta());
-            //float deltaPhi = std::fabs((*packed)[i].phi()-gj.phi());
-	    	//if (deltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
-	    	float DeltaPhi = deltaPhi((*packed)[i].phi(),gj.phi());
-	    	// later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(g);
-
-            if ( (fabs(deltaEta) > 1.0) || (fabs(DeltaPhi) > 1.0) ) continue;
-                
-            gen_pT[ng] = (*packed)[i].pt();
-            gen_dR[ng] = deltaR(gj.eta(), gj.phi(), (*packed)[i].eta(), (*packed)[i].phi());
-	    	gen_dTheta[ng] = std::atan2(DeltaPhi, deltaEta);
-            gen_mass[ng] = (*packed)[i].mass();
-	    	++ng;
-	    
-	    	if ( gen_dR[i] < 0.4 )
-	    	g += TLorentzVector((*packed)[i].px(), (*packed)[i].py(), (*packed)[i].pz(), (*packed)[i].energy());
-        
-        } // for packed gen pfs
-	
-		ngenv = ng;
-
-	    jetTree->Fill();
-
-    } // for genjets
-*/
 
 } // analyze
 

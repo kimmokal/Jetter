@@ -1,11 +1,18 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.PythonUtilities.LumiList as LumiList
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
 #process.source.lumisToProcess = LumiList.LumiList(filename = 'goodList.json').getVLuminosityBlockRange()
 
 process = cms.Process("Demo")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
+
+#QG likelihood
+process.load("Jetter.MiniAnalyzer.QGLikelihood_cfi")
+process.load('RecoJets.JetProducers.QGTagger_cfi')
+process.QGTagger.srcJets=cms.InputTag("slimmedJets")
+process.QGTagger.jetsLabel = cms.string("QGL_AK4PFchs")
 
 #Choose how many events to process
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -14,9 +21,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
 	# Without pileup:
-	'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/NoPU_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/DCD55D97-61F0-E611-9C1B-FA163EAD13C1.root'
+	#'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/NoPU_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/DCD55D97-61F0-E611-9C1B-FA163EAD13C1.root'
 	# With pileup:
-	# '/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/100000/08278E4E-E4EF-E611-8BD7-FA163E3ABA64.root'
+	'/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/100000/08278E4E-E4EF-E611-8BD7-FA163E3ABA64.root'
 	)
 )
 
@@ -36,7 +43,7 @@ process.demo = cms.EDAnalyzer('MiniAnalyzer',
 )
 
 
-process.p = cms.Path(process.demo)
+process.p = cms.Path(process.QGTagger + process.demo)
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
 
