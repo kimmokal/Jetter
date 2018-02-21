@@ -69,15 +69,15 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 
 - [ ] Needed Variables
 	- Charged Hadron Multiplicity
-	- Transverse momenta of charged particles?
-	- Transverse momenta of neutral particles?
+	- Charged Particle Transverse Momenta
 	- Neutral Hadron Multiplicity
+	- Neutral Particle Transverse Momenta
 	- Relative pT of a charged jet constituent with respect to the jet pT
 	- Relative pT of a neutral jet constituent with respect to the jet pT
 	- ∆R(cPF) : ∆R to jet axis of a charged candidate
 	- ∆R(nPF) : ∆R to jet axis of a neutral candidate
-	- "jet_corr_pt", &jet_corr_pt"
-	- JetID?
+	- JetID
+	- Phase space cut variables
 
 - [ ] ```pdg_id``` for gen particles and condensed id for 
 ```
