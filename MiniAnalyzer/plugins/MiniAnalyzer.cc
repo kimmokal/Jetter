@@ -126,6 +126,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 	unsigned int jetNeutralHadronMult;
 	unsigned int jetChargedMult;
 	unsigned int jetNeutralMult;
+
+	unsigned int jetLooseID;
+	unsigned int jetTightID;
 	
         unsigned int event;
         unsigned int run;
@@ -153,9 +156,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 	Float_t mMinGenPt;
 
 	//quark-gluon stuff
-	float jetQGl;
-	float QG_ptD;
-	float QG_axis2;
+	Float_t jetQGl;
+	Float_t QG_ptD;
+	Float_t QG_axis2;
 	unsigned int QG_mult;
 
 };
@@ -205,6 +208,9 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("jetNeutralHadronMult", &jetNeutralHadronMult, "jetNeutralHadronMult/I");
     jetTree->Branch("jetChargedMult", &jetChargedMult, "jetChargedMult/I");    
     jetTree->Branch("jetNeutralMult", &jetNeutralMult, "jetNeutralMult/I");
+
+    jetTree->Branch("jetLooseID", &jetLooseID, "jetLooseID/I");
+    jetTree->Branch("jetTightID", &jetTightID, "jetTightID/I");
 
     jetTree->Branch("genPt", &genPt, "genPt/F");
     jetTree->Branch("genEta", &genEta, "genEta/F");
@@ -359,6 +365,24 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	jetNeutralHadronMult = j.neutralHadronMultiplicity();
 	jetChargedMult = j.chargedMultiplicity();
 	jetNeutralMult = j.neutralMultiplicity();
+
+	//jetID
+	jetLooseID = 0;
+	jetTightID = 0;
+
+	Float_t nhf = j.neutralHadronEnergyFraction();
+	Float_t nemf = j.neutralEmEnergyFraction();
+	Float_t chf = j.chargedHadronEnergyFraction();
+	Float_t cemf = j.chargedEmEnergyFraction();
+	unsigned int numconst = j.chargedMultiplicity() + j.neutralMultiplicity();
+	unsigned int chm = j.chargedMultiplicity();
+	
+	if (abs(j.eta())<=2.7 && (numconst>1 && nhf<0.99 && nemf<0.99) && ((abs(j.eta())<=2.4 && chf>0 && chm>0 && cemf<0.99) || abs(j.eta())>2.4)) {
+		jetLooseID = 1;
+		if (nhf<0.90 && nemf<0.90) {
+			jetTightID = 1;
+		}
+	} 	
 
 	//assign flavours for each jet
 	partonFlav = abs(j.partonFlavour());
