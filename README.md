@@ -76,7 +76,6 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 	- Relative pT of a neutral jet constituent with respect to the jet pT
 	- ∆R(cPF) : ∆R to jet axis of a charged candidate
 	- ∆R(nPF) : ∆R to jet axis of a neutral candidate
-	- JetID
 	- Phase space cut variables
 	- Index for each jet signifying pT-ordering within single event 
 
