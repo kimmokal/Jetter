@@ -25,8 +25,8 @@ ssh -Y CERNusername@lxplus.cern.ch
 
 mkdir WorkingArea
 cd WorkingArea
-cmsrel CMSSW_8_0_6
-cd CMSSW_8_0_6/src
+cmsrel CMSSW_8_0_26
+cd CMSSW_8_0_26/src
 cmsenv
 git clone https://github.com/kimmokal/Jetter/
 scram b
@@ -78,6 +78,7 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 	- ∆R(nPF) : ∆R to jet axis of a neutral candidate
 	- JetID
 	- Phase space cut variables
+	- Index for each jet signifying pT-ordering within single event 
 
 - [ ] ```pdg_id``` for gen particles and condensed id for 
 ```
