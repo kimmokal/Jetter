@@ -68,17 +68,17 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 ## Unfinished features
 
 - [ ] Needed Variables
-	**1. Jet images:**
+	1. **Jet images:**
 	- Charged Hadron Multiplicity
 	- Charged Particle Transverse Momenta
 	- Neutral Hadron Multiplicity
 	- Neutral Particle Transverse Momenta
-	**2. Jet pfCands:**
+	2. **Jet pfCands:**
 	- Relative pT of a charged jet constituent with respect to the jet pT
 	- Relative pT of a neutral jet constituent with respect to the jet pT
 	- ∆R(cPF) : ∆R to jet axis of a charged candidate
 	- ∆R(nPF) : ∆R to jet axis of a neutral candidate
-	**3. General:**
+	3. **General:**
 	- Phase space cut variables
 	- Index for each jet signifying pT-ordering within single event 
 
