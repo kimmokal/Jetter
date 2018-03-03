@@ -80,7 +80,6 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 	- ∆R(nPF) : ∆R to jet axis of a neutral candidate
 	3. **General:**
 	- Phase space cut variables
-	- Index for each jet signifying pT-ordering within single event 
 
 - [ ] ```pdg_id``` for gen particles and condensed id for 
 ```
