@@ -133,6 +133,9 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         unsigned int event;
         unsigned int run;
         unsigned int lumi;
+
+	unsigned int eventJetMult;
+	unsigned int jetPtOrder;
         
 	unsigned int partonFlav;
 	unsigned int hadronFlav;
@@ -191,7 +194,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("nanotuplesPU.root","recreate");
+    outputFile = new TFile("nanotuplesPU_pT_ordering.root","recreate");
     jetTree = new TTree("jetTree", "Jet tree");
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
@@ -218,10 +221,15 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("genMass", &genMass, "genMass/F");
     
     jetTree->Branch("pthat", &pthat, "pthat/F");
+
+    jetTree->Branch("jetPtOrder", &jetPtOrder, "jetPtOrder/I");
     
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/I");
     jetTree->Branch("lumi", &lumi, "lumi/I");
+
+    jetTree->Branch("eventJetMult", &eventJetMult, "eventJetMult/I");
+    jetTree->Branch("jetPtOrder", &jetPtOrder, "jetPtOrder/I");
 
     jetTree->Branch("partonFlav", &partonFlav, "partonFlav/I");
     jetTree->Branch("hadronFlav", &hadronFlav, "hadronFlav/I");
@@ -257,8 +265,6 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("gen_dTheta", &gen_dTheta, "gen_dTheta[ng]/F");
     jetTree->Branch("gen_mass", &gen_mass, "gen_mass[ng]/F");
     
-
-
 }
 
 MiniAnalyzer::~MiniAnalyzer()
@@ -269,6 +275,23 @@ MiniAnalyzer::~MiniAnalyzer()
 	outputFile->Close();
 
 }
+
+// Create jet struct for storing the jet index within the event
+struct JetIndexed {	
+	pat::Jet jet;
+	unsigned int eventIndex;
+
+	JetIndexed(pat::Jet j, unsigned int eIdx) : jet(j), eventIndex(eIdx) {}  
+};
+
+// Create a sort function to compare the jet pTs for later pT-ordering
+struct higher_pT_sort
+{
+	inline bool operator() (const JetIndexed& jet1, const JetIndexed& jet2)
+	{
+		return ( jet1.jet.pt() > jet2.jet.pt() );
+	}
+};
 
 
 void
@@ -339,16 +362,42 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 //	}
 
 
-    // Loop over the jets
-    int iJetRef = -1;
-    // Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce jets with fatjets
+    // Create a vector to add the jets to
+    vector<JetIndexed> selectedJets;
+    
+    // Loop over the jets for pT-ordering within the event
+    int iJetR = -1;
     for(pat::JetCollection::const_iterator jetIt = jets->begin(); jetIt!=jets->end(); ++jetIt) {
-	const pat::Jet &j = *jetIt;
-	++iJetRef;
+        const pat::Jet &jet = *jetIt;
+	++iJetR;
+
+	// Select
+	if ( (jet.pt() < 20) || (fabs(jet.eta()) > 1.3) ) continue;
+
+	selectedJets.push_back( JetIndexed(jet, iJetR) );
+    }
+
+    // Sort the jets in pT-ordering
+    std::sort(selectedJets.begin(), selectedJets.end(), higher_pT_sort());
+
+
+    // Loop over the jets
+//    int iJetRef = -1;
+    // Decide on using AK4 or AK8 jet algorithm. If AK8 -> replce jets with fatjets
+//    for(pat::JetCollection::const_iterator jetIt = jets->begin(); jetIt!=jets->end(); ++jetIt) {
+//	const pat::Jet &j = *jetIt;
+//	++iJetRef;
 
       	// Select
-      	if (j.pt() < 20) continue;
-      	if (fabs(j.eta()) > 1.3) continue;
+//      	if ( (j.pt() < 20) || (fabs(j.eta()) > 1.3) ) continue;
+
+
+// Loop over the selected jets in pT order
+    for (unsigned int ptIdx = 0; ptIdx < selectedJets.size(); ++ptIdx) {
+
+	JetIndexed idxJet = selectedJets[ptIdx];
+	const pat::Jet j = idxJet.jet;
+	int iJetRef = idxJet.eventIndex;
 
         //adding jet parameters to jet-based tree
         jetPt = j.pt();
@@ -365,6 +414,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	jetNeutralHadronMult = j.neutralHadronMultiplicity();
 	jetChargedMult = j.chargedMultiplicity();
 	jetNeutralMult = j.neutralMultiplicity();
+
+	jetPtOrder = ptIdx;
 
 	//jetID
 	jetLooseID = 0;
@@ -437,9 +488,18 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         event = iEvent.id().event();
         run = iEvent.id().run();
         lumi = iEvent.id().luminosityBlock();
-       
 
-		//particle loop starts here
+	eventJetMult = selectedJets.size();
+       
+	// Loop over the pf candidates contained inside the jet
+	
+
+
+
+
+
+	// Create the jet images that include particles beyond the jet
+	// particle loop starts here
 		if (!(kMaxPF < pfs->size()))
 		assert(kMaxPF > pfs->size());
 		int np(0);
