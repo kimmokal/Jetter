@@ -68,19 +68,30 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        int npfv, ngenv;
+        int npfv, ngenv, nchPF, nnPF;
         struct PFV {float pT,dR,dTheta, mass;};
         static const int kMaxPF = 5000;
-
+/*
         Float_t pf_pT[kMaxPF];
         Float_t pf_dR[kMaxPF];
         Float_t pf_dTheta[kMaxPF];
         Float_t pf_mass[kMaxPF];
-
+*/
         Float_t gen_pT[kMaxPF];
         Float_t gen_dR[kMaxPF];
         Float_t gen_dTheta[kMaxPF];
         Float_t gen_mass[kMaxPF];
+
+	//Jet image variables
+	Float_t chPF_pT[kMaxPF];
+	Float_t chPF_dR[kMaxPF];
+	Float_t chPF_dTheta[kMaxPF];
+	Float_t chPF_mass[kMaxPF];
+
+	Float_t nPF_pT[kMaxPF];
+	Float_t nPF_dR[kMaxPF];
+	Float_t nPF_dTheta[kMaxPF];
+	Float_t nPF_mass[kMaxPF];
 
 	//int getMatchedPartonGen(edm::Event const&, std::vector<reco::GenJet>::const_iterator&);
 	
@@ -194,7 +205,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("nanotuplesPU_pT_ordering.root","recreate");
+    outputFile = new TFile("nanotuplesPU_image2.root","recreate");
     jetTree = new TTree("jetTree", "Jet tree");
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
@@ -247,7 +258,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("isPhysG", &isPhysG, "isPhysG/I");
     jetTree->Branch("isPhysOther", &isPhysOther, "isPhysOther/I");
 
-
+/*
     jetTree->Branch("np",&npfv,"np/I");
     //jetTree->Branch("pf", pfv, "pT[np]/F:dR[np]/F:dTheta[np]/F:"
     //	    "mass[np]/F");
@@ -255,6 +266,19 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("pf_dR", &pf_dR, "dR[np]/F");
     jetTree->Branch("pf_dTheta", &pf_dTheta, "dTheta[np]/F");
     jetTree->Branch("pf_mass", &pf_mass, "mass[np]/F");
+*/
+    // Jet image variables
+    jetTree->Branch("nchPF", &nchPF, "nchPF/I");
+    jetTree->Branch("chPF_pT", &chPF_pT, "chPF_pT[nchPF]/F");
+    jetTree->Branch("chPF_dR", &chPF_dR, "chPF_dR[nchPF]/F");
+    jetTree->Branch("chPF_dTheta", &chPF_dTheta, "chPF_dTheta[nchPF]/F");
+    jetTree->Branch("chPF_mass", &chPF_mass, "chPF_mass[nchPF]/F");
+
+    jetTree->Branch("nnPF", &nnPF, "nnPF/I");
+    jetTree->Branch("nPF_pT", &nPF_pT, "nPF_pT[nnPF]/F");
+    jetTree->Branch("nPF_dR", &nPF_dR, "nPF_dR[nnPF]/F");
+    jetTree->Branch("nPF_dTheta", &nPF_dTheta, "nPF_dTheta[nnPF]/F");
+    jetTree->Branch("nPF_mass", &nPF_mass, "nPF_mass[nnPF]/F");
 
     jetTree->Branch("ng",&ngenv,"ng/I");
     //jetTree->Branch("gen", genv, "pT[ng]/F:dR[ng]/F:dTheta[ng]/F:"
@@ -498,9 +522,9 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 
 
-	// Create the jet images that include particles beyond the jet
+	// Create the jet images that include particles also outside the jet
 	// particle loop starts here
-		if (!(kMaxPF < pfs->size()))
+/*		if (!(kMaxPF < pfs->size()))
 		assert(kMaxPF > pfs->size());
 		int np(0);
 
@@ -523,7 +547,43 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         } // for pfs
 	
 		npfv = np;
+*/
+        // PF Particle loop
+                if (!(kMaxPF < pfs->size()))
+                assert(kMaxPF > pfs->size());
+                int nch(0); // charged
+		int nn(0);  // neutral
 
+        for (unsigned int i = 0; i != pfs->size(); ++i) {
+            const pat::PackedCandidate &pf = (*pfs)[i];
+
+            float deltaEta = (pf.eta()-j.eta());
+            float DeltaPhi = deltaPhi(pf.phi(),j.phi());
+	    //if (DeltaPhi>(M_PI)) deltaPhi-=(2*M_PI);
+            // later: TLorentzVector::DeltaPhi() => dPhi = pf.DeltaPhi(j);
+
+            if ( (fabs(deltaEta) > 1.0) || (fabs(DeltaPhi) > 1.0) ) continue;
+
+	    if (pf.charge()) {
+            	chPF_pT[nch] = pf.pt();
+            	chPF_dR[nch] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+            	chPF_dTheta[nch] = std::atan2(DeltaPhi, deltaEta);
+            	chPF_mass[nch] = pf.mass();
+            	++nch;
+	    } else {
+                nPF_pT[nn] = pf.pt();
+               	nPF_dR[nn] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+                nPF_dTheta[nn] = std::atan2(DeltaPhi, deltaEta);
+                nPF_mass[nn] = pf.mass();
+                ++nn;
+	    }
+
+        } // for pfs
+
+                nchPF = nch;
+		nnPF = nn;
+
+	// Gen particle loop
 		TLorentzVector g(0,0,0,0);
 		int ng(0);
 
