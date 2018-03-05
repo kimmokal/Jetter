@@ -219,7 +219,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("nanotuplesPFs_PU.root","recreate");
+    outputFile = new TFile("nanotuples2_PU.root","recreate");
     jetTree = new TTree("jetTree", "Jet tree");
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
@@ -541,6 +541,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
        
 	// Loop over the pf candidates contained inside the jet (first sorting them in pT-order)
 	std::vector<reco::CandidatePtr> pfCands = j.daughterPtrVector();
+	std::sort(pfCands.begin(), pfCands.end(), [](const reco::CandidatePtr &p1, const reco::CandidatePtr &p2) {return p1->pt() > p2->pt(); });
 	int nnpf(0);
 	int ncpf(0);
 	for (unsigned int i = 0; i < pfCands.size(); ++i) {
