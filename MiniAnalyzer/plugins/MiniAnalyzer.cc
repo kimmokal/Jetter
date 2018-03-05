@@ -68,25 +68,39 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        int npfv, ngenv, nchPF, nnPF;
+        int npfv, ngenv, ncPF, nnPF;
         struct PFV {float pT,dR,dTheta, mass;};
         static const int kMaxPF = 5000;
+
+	// Jet constituent variables
+	Float_t jetcPF_pT[kMaxPF];
+	Float_t jetcPF_pTrel[kMaxPF];
+	Float_t jetcPF_dR[kMaxPF];
+	Float_t jetcPF_dTheta[kMaxPF];
+	Float_t jetcPF_mass[kMaxPF];
+
+	Float_t jetnPF_pT[kMaxPF];
+	Float_t jetnPF_pTrel[kMaxPF];
+	Float_t jetnPF_dR[kMaxPF];
+	Float_t jetnPF_dTheta[kMaxPF];
+	Float_t jetnPF_mass[kMaxPF];
 /*
         Float_t pf_pT[kMaxPF];
         Float_t pf_dR[kMaxPF];
         Float_t pf_dTheta[kMaxPF];
         Float_t pf_mass[kMaxPF];
 */
+	// Gen particle variables
         Float_t gen_pT[kMaxPF];
         Float_t gen_dR[kMaxPF];
         Float_t gen_dTheta[kMaxPF];
         Float_t gen_mass[kMaxPF];
 
 	//Jet image variables
-	Float_t chPF_pT[kMaxPF];
-	Float_t chPF_dR[kMaxPF];
-	Float_t chPF_dTheta[kMaxPF];
-	Float_t chPF_mass[kMaxPF];
+	Float_t cPF_pT[kMaxPF];
+	Float_t cPF_dR[kMaxPF];
+	Float_t cPF_dTheta[kMaxPF];
+	Float_t cPF_mass[kMaxPF];
 
 	Float_t nPF_pT[kMaxPF];
 	Float_t nPF_dR[kMaxPF];
@@ -205,7 +219,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("nanotuplesPU_image2.root","recreate");
+    outputFile = new TFile("nanotuplesPFs_PU.root","recreate");
     jetTree = new TTree("jetTree", "Jet tree");
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
@@ -222,6 +236,18 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("jetNeutralHadronMult", &jetNeutralHadronMult, "jetNeutralHadronMult/I");
     jetTree->Branch("jetChargedMult", &jetChargedMult, "jetChargedMult/I");    
     jetTree->Branch("jetNeutralMult", &jetNeutralMult, "jetNeutralMult/I");
+
+    jetTree->Branch("jetcPF_pT", &jetcPF_pT, "jetcPF_pT[jetChargedMult]/F");
+    jetTree->Branch("jetcPF_pTrel", &jetcPF_pTrel, "jetcPF_pTrel[jetChargedMult]/F");
+    jetTree->Branch("jetcPF_dR", &jetcPF_dR, "jetcPF_dR[jetChargedMult]/F");
+    jetTree->Branch("jetcPF_dTheta", &jetcPF_dTheta, "jetcPF_dTheta[jetChargedMult]/F");
+    jetTree->Branch("jetcPF_mass", &jetcPF_mass, "jetcPF_mass[jetChargedMult]/F");
+
+    jetTree->Branch("jetnPF_pT", &jetnPF_pT, "jetnPF_pT[jetNeutralMult]/F");
+    jetTree->Branch("jetnPF_pTrel", &jetnPF_pTrel, "jetnPF_pTrel[jetNeutralMult]/F");
+    jetTree->Branch("jetnPF_dR", &jetnPF_dR, "jetnPF_dR[jetNeutralMult]/F");
+    jetTree->Branch("jetnPF_dTheta", &jetnPF_dTheta, "jetnPF_dTheta[jetNeutralMult]/F");
+    jetTree->Branch("jetnPF_mass", &jetnPF_mass, "jetnPF_mass[jetNeutralMult]/F");
 
     jetTree->Branch("jetLooseID", &jetLooseID, "jetLooseID/I");
     jetTree->Branch("jetTightID", &jetTightID, "jetTightID/I");
@@ -268,11 +294,11 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("pf_mass", &pf_mass, "mass[np]/F");
 */
     // Jet image variables
-    jetTree->Branch("nchPF", &nchPF, "nchPF/I");
-    jetTree->Branch("chPF_pT", &chPF_pT, "chPF_pT[nchPF]/F");
-    jetTree->Branch("chPF_dR", &chPF_dR, "chPF_dR[nchPF]/F");
-    jetTree->Branch("chPF_dTheta", &chPF_dTheta, "chPF_dTheta[nchPF]/F");
-    jetTree->Branch("chPF_mass", &chPF_mass, "chPF_mass[nchPF]/F");
+    jetTree->Branch("ncPF", &ncPF, "ncPF/I");
+    jetTree->Branch("cPF_pT", &cPF_pT, "cPF_pT[ncPF]/F");
+    jetTree->Branch("cPF_dR", &cPF_dR, "cPF_dR[ncPF]/F");
+    jetTree->Branch("cPF_dTheta", &cPF_dTheta, "cPF_dTheta[ncPF]/F");
+    jetTree->Branch("cPF_mass", &cPF_mass, "cPF_mass[ncPF]/F");
 
     jetTree->Branch("nnPF", &nnPF, "nnPF/I");
     jetTree->Branch("nPF_pT", &nPF_pT, "nPF_pT[nnPF]/F");
@@ -436,8 +462,6 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 	jetChargedHadronMult = j.chargedHadronMultiplicity();
 	jetNeutralHadronMult = j.neutralHadronMultiplicity();
-	jetChargedMult = j.chargedMultiplicity();
-	jetNeutralMult = j.neutralMultiplicity();
 
 	jetPtOrder = ptIdx;
 
@@ -515,12 +539,33 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 	eventJetMult = selectedJets.size();
        
-	// Loop over the pf candidates contained inside the jet
+	// Loop over the pf candidates contained inside the jet (first sorting them in pT-order)
+	std::vector<reco::CandidatePtr> pfCands = j.daughterPtrVector();
+	int nnpf(0);
+	int ncpf(0);
+	for (unsigned int i = 0; i < pfCands.size(); ++i) {
+		const pat::PackedCandidate &pf = dynamic_cast<const pat::PackedCandidate &>(*pfCands[i]);
+                float dEta = pf.eta()-j.eta();
+                float dPhi = deltaPhi(pf.phi(), j.phi());		
+		if (pf.charge() == 0) {
+                	jetnPF_pT[nnpf] = pf.pt();
+                	jetnPF_pTrel[nnpf] = pf.pt() / j.pt();
+                	jetnPF_mass[nnpf] = pf.mass();
+                	jetnPF_dR[nnpf] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+                	jetnPF_dTheta[nnpf] = std::atan2(dPhi, dEta);
+			++nnpf;
+		} else {
+                	jetcPF_pT[ncpf] = pf.pt();
+                	jetcPF_pTrel[ncpf] = pf.pt() / j.pt();
+                	jetcPF_mass[ncpf] = pf.mass();
+                	jetcPF_dR[ncpf] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+                	jetcPF_dTheta[ncpf] = std::atan2(dPhi, dEta);
+			++ncpf;
+		}
+	}	
+	jetNeutralMult = nnpf;
+	jetChargedMult = ncpf;
 	
-
-
-
-
 
 	// Create the jet images that include particles also outside the jet
 	// particle loop starts here
@@ -551,7 +596,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         // PF Particle loop
                 if (!(kMaxPF < pfs->size()))
                 assert(kMaxPF > pfs->size());
-                int nch(0); // charged
+                int nc(0); // charged
 		int nn(0);  // neutral
 
         for (unsigned int i = 0; i != pfs->size(); ++i) {
@@ -564,23 +609,23 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
             if ( (fabs(deltaEta) > 1.0) || (fabs(DeltaPhi) > 1.0) ) continue;
 
-	    if (pf.charge()) {
-            	chPF_pT[nch] = pf.pt();
-            	chPF_dR[nch] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
-            	chPF_dTheta[nch] = std::atan2(DeltaPhi, deltaEta);
-            	chPF_mass[nch] = pf.mass();
-            	++nch;
-	    } else {
+	    if (pf.charge() == 0) {
                 nPF_pT[nn] = pf.pt();
-               	nPF_dR[nn] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+                nPF_dR[nn] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
                 nPF_dTheta[nn] = std::atan2(DeltaPhi, deltaEta);
                 nPF_mass[nn] = pf.mass();
                 ++nn;
+	    } else {
+                cPF_pT[nc] = pf.pt();
+                cPF_dR[nc] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
+                cPF_dTheta[nc] = std::atan2(DeltaPhi, deltaEta);
+                cPF_mass[nc] = pf.mass();
+                ++nc;
 	    }
 
         } // for pfs
 
-                nchPF = nch;
+                ncPF = nc;
 		nnPF = nn;
 
 	// Gen particle loop
