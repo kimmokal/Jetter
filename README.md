@@ -68,12 +68,7 @@ As a general rule, variable with underscore refers to particles (to avoid confus
 ## Unfinished features
 
 - [ ] Needed Variables
-	1. **Jet pfCands:**
-	- Relative pT of a charged jet constituent with respect to the jet pT
-	- Relative pT of a neutral jet constituent with respect to the jet pT
-	- ∆R(cPF) : ∆R to jet axis of a charged candidate
-	- ∆R(nPF) : ∆R to jet axis of a neutral candidate
-	2. **General:**
+	1. **General:**
 	- Phase space cut variables
 
 - [ ] ```pdg_id``` for gen particles and condensed id for 
