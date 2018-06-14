@@ -102,7 +102,7 @@ Some of the variables (such as jetRawPhi) are redundant and there is some incons
 | jetPF_dR[jetMult] | Distance of a jet constituent to the center of the jet |
 | jetPF_dTheta[jetMult] | Polar angle (θ) of a jet constituent |
 | jetPF_mass[jetMult] | Mass of a jet constituent |
-| jetPF_id[jetMult] | Particle identifier of a jet constituent, as defined by the PDG numbering scheme (For PF candidates: charged hadron = 211/-211; neutral hadron = 130; photon = 111) |
+| jetPF_id[jetMult] | Particle identifier of a jet constituent, as defined by the PDG numbering scheme (For PF candidates: charged hadron = 211/-211; neutral hadron = 130; photon = 22) |
 | jetPFfromPV[jetMult] | A number indicating how tightly a particle is associated with the primary vertex (ranges from 3 to 0) |
 | ng | Number of generator level particles in the corresponding generator level jet |
 | genPF_pT[ng] | Transverse momentum of a gen level jet constituent |
@@ -120,7 +120,7 @@ There are also variables for 'jet images' (arXiv:1612.01551 [hep-ph]), for which
 | PF_dR[nPF] | Distance of a PF candidate to the center of the jet |
 | PF_dTheta[nPF] | Polar angle (θ) of a PF candidate |
 | PF_mass[nPF] | Mass of a PF candidate |
-| PF_id[nPF] | Particle identifier as defined by the PDG convention (For PF candidates: charged hadron = 211/-211; neutral hadron = 130; photon = 111) |
+| PF_id[nPF] | Particle identifier as defined by the PDG convention (For PF candidates: charged hadron = 211/-211; neutral hadron = 130; photon = 22) |
 | PF_fromPV[nPF] | A number indicating how tightly a particle is associated with the primary vertex (ranges from 3 to 0) |
 
 
