@@ -18,6 +18,7 @@
 #include <cmath>
 
 #include <iostream>
+#include <fstream>
 
 //user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -71,7 +72,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         explicit MiniAnalyzer(const edm::ParameterSet&);
         ~MiniAnalyzer();
 
-        int npfv, ngenv, nPF, ncPF, nnPF;
+        int ngenv, nPF;
         struct PFV {float pT,dR,dTheta, mass;};
         static const int kMaxPF = 5000;
 
@@ -82,7 +83,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 	Float_t jetPF_dTheta[kMaxPF];
 	Float_t jetPF_mass[kMaxPF];
 	int jetPF_id[kMaxPF];
-        int jetPFfromPV[kMaxPF];
+        int jetPF_fromPV[kMaxPF];
 
 	// Gen particle variables
         Float_t genPF_pT[kMaxPF];
@@ -95,6 +96,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 	Float_t PF_pT[kMaxPF];
 	Float_t PF_dR[kMaxPF];
 	Float_t PF_dTheta[kMaxPF];
+        Float_t PF_dPhi[kMaxPF];
+        Float_t PF_dEta[kMaxPF];
 	Float_t PF_mass[kMaxPF];
         int PF_id[kMaxPF];
         int PF_fromPV[kMaxPF];
@@ -154,6 +157,10 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
 	unsigned int eventJetMult;
 	unsigned int jetPtOrder;
+        
+        Float_t dPhiJetsLO;
+        Float_t dEtaJetsLO;
+        Float_t alpha;
 
 	unsigned int partonFlav;
 	unsigned int hadronFlav;
@@ -241,7 +248,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("jetPF_dTheta", &jetPF_dTheta, "jetPF_dTheta[jetMult]/F");
     jetTree->Branch("jetPF_mass", &jetPF_mass, "jetPF_mass[jetMult]/F");
     jetTree->Branch("jetPF_id", &jetPF_id, "jetPF_id[jetMult]/I");
-    jetTree->Branch("jetPFfromPV", &jetPFfromPV, "jetPFfromPV[jetMult]/I");
+    jetTree->Branch("jetPF_fromPV", &jetPF_fromPV, "jetPF_fromPV[jetMult]/I");
 
     jetTree->Branch("ng",&ngenv,"ng/I");
 
@@ -262,14 +269,16 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("pthat", &pthat, "pthat/F");
     jetTree->Branch("eventWeight", &eventWeight, "eventWeight/F");
 
-    jetTree->Branch("jetPtOrder", &jetPtOrder, "jetPtOrder/I");
-
     jetTree->Branch("event", &event, "event/l");
     jetTree->Branch("run", &run, "run/I");
     jetTree->Branch("lumi", &lumi, "lumi/I");
 
     jetTree->Branch("eventJetMult", &eventJetMult, "eventJetMult/I");
     jetTree->Branch("jetPtOrder", &jetPtOrder, "jetPtOrder/I");
+
+    jetTree->Branch("dPhiJetsLO", &dPhiJetsLO, "dPhiJetsLO/F");
+    jetTree->Branch("dEtaJetsLO", &dEtaJetsLO, "dEtaJetsLO/F");
+    jetTree->Branch("alpha", &alpha, "alpha/F");
 
     jetTree->Branch("partonFlav", &partonFlav, "partonFlav/I");
     jetTree->Branch("hadronFlav", &hadronFlav, "hadronFlav/I");
@@ -292,6 +301,8 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("PF_pT", &PF_pT, "PF_pT[nPF]/F");
     jetTree->Branch("PF_dR", &PF_dR, "PF_dR[nPF]/F");
     jetTree->Branch("PF_dTheta", &PF_dTheta, "PF_dTheta[nPF]/F");
+    jetTree->Branch("PF_dPhi", &PF_dPhi, "PF_dPhi[nPF]/F");
+    jetTree->Branch("PF_dEta", &PF_dEta, "PF_dEta[nPF]/F");
     jetTree->Branch("PF_mass", &PF_mass, "cPF_mass[nPF]/F");
     jetTree->Branch("PF_id", &PF_id, "PF_id[nPF]/I");
     jetTree->Branch("PF_fromPV", &PF_fromPV, "PF_fromPV[nPF]/I");
@@ -301,7 +312,7 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
 MiniAnalyzer::~MiniAnalyzer()
 {
 
-//at the end, write data into tree
+//at the end, write data into tree (needed only when running locally on lxplus
 	outputFile = jetTree->GetCurrentFile();
 	outputFile->Write();
 	outputFile->Close();
@@ -371,6 +382,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.getByToken(EDMGenJetsToken_, genJets);
 
     // Create a vector to add the jets to
+    vector<JetIndexed> sortedJets;
     vector<JetIndexed> selectedJets;
 
     // Loop over the jets for pT-ordering within the event
@@ -380,17 +392,24 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
         const pat::Jet &jet = *jetIt;
 	++iJetR;
 
-	// Select
-	if ( (jet.pt() < 20) || (fabs(jet.eta()) > 1.3) ) continue;
+	sortedJets.push_back( JetIndexed( jet, iJetR) );
 
-	selectedJets.push_back( JetIndexed(jet, iJetR) );
+        // Select
+        if ( (jet.pt() > 30) && (fabs(jet.eta()) < 2.5) ) {
+                selectedJets.push_back( JetIndexed( jet, iJetR) );
+        }
     }
 
     // Sort the jets in pT-ordering
+    std::sort(sortedJets.begin(), sortedJets.end(), higher_pT_sort());
     std::sort(selectedJets.begin(), selectedJets.end(), higher_pT_sort());
 
     // Loop over the selected jets in pT order
     for (unsigned int ptIdx = 0; ptIdx < selectedJets.size(); ++ptIdx) {
+        // Make cuts on the event level
+        if (sortedJets.size() < 2) continue;
+        if (fabs(sortedJets[0].jet.eta()) > 2.5 || fabs(sortedJets[1].jet.eta()) > 2.5) continue;
+        if (fabs(sortedJets[0].jet.pt()) < 30 || fabs(sortedJets[1].jet.pt()) < 30) continue;
 
 	JetIndexed idxJet = selectedJets[ptIdx];
 	const pat::Jet j = idxJet.jet;
@@ -432,11 +451,23 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 		}
 	}
 
+        //add variables for deltaPhi and deltaEta for the two leading jets of the event
+        dPhiJetsLO = deltaPhi(sortedJets[0].jet.phi(), sortedJets[1].jet.phi());
+        dEtaJetsLO = sortedJets[0].jet.eta() - sortedJets[1].jet.eta();
+
+        //the alpha variable is the third jet's pT divided by the average of the two leading jets' pT
+        alpha = 0;
+        //first make sure that there are at least 3 jets in the event
+        if(sortedJets.size() > 2) {
+                Float_t leadingPtAvg = (sortedJets[0].jet.pt() + sortedJets[1].jet.pt()) * 0.5;
+                alpha = sortedJets[2].jet.pt() / leadingPtAvg;
+        }
+
 	//assign flavours for each jet
 	partonFlav = abs(j.partonFlavour());
 	hadronFlav = abs(j.hadronFlavour());
         physFlav = 0;
-	if (j.genParton()) physFlav = abs(j.genParton()->pdgId());
+	if (j.genParton()) physFlav = j.genParton()->pdgId();
 
 	isPartonUDS = 0;
 	isPartonG = 0;
@@ -455,9 +486,9 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	}
 
 	//physics definition for flavours
-	if(physFlav == 1 || physFlav == 2 || physFlav == 3) {
+	if(abs(physFlav) == 1 || abs(physFlav) == 2 || abs(physFlav) == 3) {
 		isPhysUDS = 1;
-	} else if(physFlav == 21) {
+	} else if(abs(physFlav) == 21) {
 		isPhysG = 1;
 	} else {
 		isPhysOther = 1;
@@ -503,7 +534,7 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
                 jetPF_dR[njetpf] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
                 jetPF_dTheta[njetpf] = std::atan2(dPhi, dEta);
 		jetPF_id[njetpf] = pf.pdgId();
-                jetPFfromPV[njetpf] = pf.fromPV();
+                jetPF_fromPV[njetpf] = pf.fromPV();
 
                 jetGirth += sqrt(dY*dY + dPhi*dPhi) * pf.pt()/j.pt();
 		++njetpf;
@@ -581,6 +612,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
                 PF_pT[npfs] = pf.pt();
                 PF_dR[npfs] = deltaR(j.eta(), j.phi(), pf.eta(), pf.phi());
                 PF_dTheta[npfs] = std::atan2(DeltaPhi, deltaEta);
+                PF_dPhi[npfs] = DeltaPhi;
+                PF_dEta[npfs] = deltaEta;
                 PF_mass[npfs] = pf.mass();
                 PF_id[npfs] = pf.pdgId();
                 PF_fromPV[npfs] =  pf.fromPV();
