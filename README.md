@@ -86,7 +86,7 @@ Some of the variables (such as jetRawPhi) are admittedly redundant.
 | eventJetMult | Multiplicity of jets in the event |
 | dPhiJetsLO | The phi difference of the two leading jets |
 | dEtaJetsLO | The eta difference of the two leading jets |
-| alpha | If there are at least 3 jets in the event, alpha is the third jet's pT divided by the average pT of the two leading jets |
+| alpha | If there are at least 3 jets in the event, alpha is the third jet's transverse momentum divided by the average transverse momentum of the two leading jets |
 | partonFlav | Flavour of the jet, as defined by the parton-based definition (https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools) |
 | hadronFlav | Flavour of the jet, as defined by the hadron-based definition (see above link) |
 | physFlav | Flavour of the jet, as defined by the 'physics' definition (see above link) |
