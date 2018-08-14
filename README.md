@@ -53,7 +53,7 @@ Data variables are saved to ROOT trees jet by jet.
 
 In this version, the reconstructed jets are AK4 jets clustered from Particle Flow candidates. The standard L1+L2+L3+residual energy corrections are applied to the jets and pileup is reduced using the CHS algorithm.
 
-Some of the variables (such as jetRawPhi) are redundant and there is some inconsistency in the naming, but fixing these is not top priority at the moment.
+Some of the variables (such as jetRawPhi) are admittedly redundant.
 
 | Data variable | Description |
 | :------------ | :---------- |
@@ -84,6 +84,9 @@ Some of the variables (such as jetRawPhi) are redundant and there is some incons
 | run | Run number |
 | lumi | Luminosity block |
 | eventJetMult | Multiplicity of jets in the event |
+| dPhiJetsLO | The phi difference of the two leading jets |
+| dEtaJetsLO | The eta difference of the two leading jets |
+| alpha | If there are at least 3 jets in the event, alpha is the third jet's pT divided by the average pT of the two leading jets |
 | partonFlav | Flavour of the jet, as defined by the parton-based definition (https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools) |
 | hadronFlav | Flavour of the jet, as defined by the hadron-based definition (see above link) |
 | physFlav | Flavour of the jet, as defined by the 'physics' definition (see above link) |
@@ -103,7 +106,7 @@ Some of the variables (such as jetRawPhi) are redundant and there is some incons
 | jetPF_dTheta[jetMult] | Polar angle (θ) of a jet constituent |
 | jetPF_mass[jetMult] | Mass of a jet constituent |
 | jetPF_id[jetMult] | Particle identifier of a jet constituent, as defined by the PDG numbering scheme (For PF candidates: charged hadron = 211/-211; neutral hadron = 130; photon = 22) |
-| jetPFfromPV[jetMult] | A number indicating how tightly a particle is associated with the primary vertex (ranges from 3 to 0) |
+| jetPF_fromPV[jetMult] | A number indicating how tightly a particle is associated with the primary vertex (ranges from 3 to 0) |
 | ng | Number of generator level particles in the corresponding generator level jet |
 | genPF_pT[ng] | Transverse momentum of a gen level jet constituent |
 | genPF_dR[ng] | Distance of a gen level jet constituent to the center of the gen jet |
