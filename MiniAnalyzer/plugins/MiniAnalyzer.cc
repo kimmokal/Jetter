@@ -29,6 +29,10 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
+//File service for saving the root files
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
 //MiniAOD PAT libraries
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -105,6 +109,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
     private:
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+        virtual void beginJob();
 
         // ----------member data ---------------------------
         edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
@@ -124,6 +129,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         edm::EDGetTokenT<edm::ValueMap<float> > ptDToken_;
         edm::EDGetTokenT<edm::ValueMap<float> > axis2Token_;
         edm::EDGetTokenT<edm::ValueMap<int>   > multToken_;
+
+        edm::Service<TFileService> fs;
 
 	std::string t_qgtagger;
 
@@ -151,7 +158,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 	unsigned int jetLooseID;
 	unsigned int jetTightID;
 
-        unsigned int event;
+        ULong64_t event;
         unsigned int run;
         unsigned int lumi;
 
@@ -164,7 +171,7 @@ class MiniAnalyzer : public edm::EDAnalyzer {
 
 	unsigned int partonFlav;
 	unsigned int hadronFlav;
-	unsigned int physFlav;
+	int physFlav;
 
 	unsigned int isPartonUDS;
 	unsigned int isPartonG;
@@ -181,8 +188,8 @@ class MiniAnalyzer : public edm::EDAnalyzer {
         Float_t pthat;
         Float_t eventWeight;
 
-	Float_t mMaxY;
-	Float_t mMinGenPt;
+//	Float_t mMaxY;
+//	Float_t mMinGenPt;
 
 	//quark-gluon stuff
 	Float_t jetQGl;
@@ -214,15 +221,28 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     axis2Token_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"))),
     multToken_(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult")))
 
+{}
+
+MiniAnalyzer::~MiniAnalyzer()
 {
 
+//at the end, write data into tree (needed only when running locally on lxplus
+//      outputFile = jetTree->GetCurrentFile();
+//      outputFile->Write();
+//      outputFile->Close();
+
+}
+
+void MiniAnalyzer::beginJob()
+{
 //    mMaxY = iConfig.getParameter<double>("maxY");
-    mMinGenPt = iConfig.getUntrackedParameter<double>("minGenPt", 30);
+//    mMinGenPt = iConfig.getUntrackedParameter<double>("minGenPt", 30);
 
     //sets the output file, tree and the parameters to be saved to the tree
 
-    outputFile = new TFile("QCD_jettuples_pythia8_PU.root","recreate");
-    jetTree = new TTree("jetTree", "Jet tree");
+    //outputFile = new TFile("QCD_jettuples_pythia8_PU.root","recreate");
+    //jetTree = new TTree("jetTree", "Jet tree");
+    jetTree = fs->make<TTree>("jetTree", "jetTree");
     jetTree->SetMaxTreeSize(1000000000); 	// Set max file size to around 1 gigabyte
 
     jetTree->Branch("jetPt", &jetPt, "jetPt/F");
@@ -306,16 +326,6 @@ MiniAnalyzer::MiniAnalyzer(const edm::ParameterSet& iConfig):
     jetTree->Branch("PF_mass", &PF_mass, "cPF_mass[nPF]/F");
     jetTree->Branch("PF_id", &PF_id, "PF_id[nPF]/I");
     jetTree->Branch("PF_fromPV", &PF_fromPV, "PF_fromPV[nPF]/I");
-
-}
-
-MiniAnalyzer::~MiniAnalyzer()
-{
-
-//at the end, write data into tree (needed only when running locally on lxplus
-	outputFile = jetTree->GetCurrentFile();
-	outputFile->Write();
-	outputFile->Close();
 
 }
 
@@ -466,6 +476,8 @@ MiniAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	//assign flavours for each jet
 	partonFlav = abs(j.partonFlavour());
 	hadronFlav = abs(j.hadronFlavour());
+
+        //physFlav also distinguishes quarks and antiquarks (no abs)
         physFlav = 0;
 	if (j.genParton()) physFlav = j.genParton()->pdgId();
 

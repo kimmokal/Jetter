@@ -15,6 +15,10 @@ process.load('RecoJets.JetProducers.QGTagger_cfi')
 process.QGTagger.srcJets=cms.InputTag("slimmedJets")
 process.QGTagger.jetsLabel = cms.string("QGL_AK4PFchs")
 
+#File service
+process.load('CommonTools.UtilAlgos.TFileService_cfi')
+process.TFileService.fileName=cms.string('Jetter.root')
+
 #Choose how many events to process
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
