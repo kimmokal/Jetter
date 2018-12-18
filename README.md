@@ -1,4 +1,4 @@
-# Jetter - a Jet nanotuple producer from CMS MiniAOD
+# Jetter - a Jet tuple producer from CMS MiniAOD
 
 This is a CMSSW module for producing mostly flat tuples from 13 TeV Run2 MC samples.
 
@@ -47,7 +47,7 @@ Variables are saved to ROOT trees jet by jet.
 In this version, the reconstructed jets are AK4 jets clustered from Particle Flow candidates. The standard L1+L2+L3+residual energy corrections are applied to the jets and pileup is reduced using the CHS algorithm.
 
 | Data variable | Type | Description |
-| :------------ | :---------- | :---------- |
+| :---------------------- | -----------------: | :---------------------- |
 | jetPt | Float_t | Transverse momentum of the jet |
 | jetEta | Float_t | Pseudorapidity (η) of the jet |
 | jetPhi | Float_t | Azimuthal angle (ϕ) of the jet |
@@ -77,7 +77,7 @@ In this version, the reconstructed jets are AK4 jets clustered from Particle Flo
 | jetChargedMult | UInt_t | Multiplicity of charged jet constituents |
 | jetNeutralMult | UInt_t | Multiplicity of neutral jet constituents |
 | jetMult | UInt_t | Multiplicity of jet constituents |
-| nPF | UInt_t | Number of particle flow (PF) candidates (jet constituent particles reconstructed by the particle flow algorithm); contains all particles within |Δϕ<1| < 1 && |Δη<1| < 1 from the center of the jet |
+| nPF | UInt_t | Number of particle flow (PF) candidates (particles reconstructed by the particle flow algorithm); contains all particles within |Δϕ| < 1 && |Δη| < 1 from the center of the jet |
 | PF_pT[nPF] | Float_t | Transverse momentum of a PF candidate |
 | PF_dR[nPF] | Float_t | Distance of a PF candidate to the center of the jet |
 | PF_dTheta[nPF] | Float_t | Polar angle (θ) of a PF candidate |
@@ -114,5 +114,3 @@ In this version, the reconstructed jets are AK4 jets clustered from Particle Flo
 | PV_npvsGood | UInt_t | The number of good reconstructed primary vertices |
 | Pileup_nPU | UInt_t | The number of pileup interactions that have been added to the event in the current bunch crossing |
 | Pileup_nTrueInt | Float_t | The true mean number of the poisson distribution for this event from which the number of interactions in each bunch crossing has been sampled |
-
-There are also variables for 'jet images' (arXiv:1612.01551 [hep-ph]), for which every Particle Flow (PF) candidate within the area Δη<1 && Δϕ<1 around the jet center is saved. This includes particles which are not part of the jet.
