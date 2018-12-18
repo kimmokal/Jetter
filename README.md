@@ -77,7 +77,7 @@ In this version, the reconstructed jets are AK4 jets clustered from Particle Flo
 | jetChargedMult | UInt_t | Multiplicity of charged jet constituents |
 | jetNeutralMult | UInt_t | Multiplicity of neutral jet constituents |
 | jetMult | UInt_t | Multiplicity of jet constituents |
-| nPF | UInt_t | Number of particle flow (PF) candidates (particles reconstructed by the particle flow algorithm); contains all particles within |Δϕ| < 1 && |Δη| < 1 from the center of the jet |
+| nPF | UInt_t | Number of particle flow (PF) candidates (particles reconstructed by the particle flow algorithm); contains all particles within \|Δϕ\| < 1 and \|Δη\| < 1 from the center of the jet |
 | PF_pT[nPF] | Float_t | Transverse momentum of a PF candidate |
 | PF_dR[nPF] | Float_t | Distance of a PF candidate to the center of the jet |
 | PF_dTheta[nPF] | Float_t | Polar angle (θ) of a PF candidate |
@@ -108,9 +108,9 @@ In this version, the reconstructed jets are AK4 jets clustered from Particle Flo
 | pthat | Float_t | Transverse momentum of the generated hard process |
 | eventWeight | Float_t | Weight assigned to the generated event |
 | rhoAll | Float_t | The median density (in GeV/A) of pile-up contamination per event; computed from all PF candidates of the event |
-| rhoCentral | Float_t | Same as above, computed from all PF candidates with |eta| < 2.5 |
-| rhoCentralNeutral | Float_t | Same as above, computed from all neutral PF candidates with |eta| < 2.5 |
-| rhoCentralChargedPileUp | Float_t | Same as above, computed from all PF charged hadrons associated to pileup vertices and with |eta| < 2.5 |
+| rhoCentral | Float_t | Same as above, computed from all PF candidates with \|η\| < 2.5 |
+| rhoCentralNeutral | Float_t | Same as above, computed from all neutral PF candidates with \|η\| < 2.5 |
+| rhoCentralChargedPileUp | Float_t | Same as above, computed from all PF charged hadrons associated to pileup vertices and with \|η\| < 2.5 |
 | PV_npvsGood | UInt_t | The number of good reconstructed primary vertices |
 | Pileup_nPU | UInt_t | The number of pileup interactions that have been added to the event in the current bunch crossing |
 | Pileup_nTrueInt | Float_t | The true mean number of the poisson distribution for this event from which the number of interactions in each bunch crossing has been sampled |
