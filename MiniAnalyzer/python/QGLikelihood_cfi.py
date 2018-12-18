@@ -9,8 +9,8 @@ from CondCore.CondDB.CondDB_cfi import *
 QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       CondDB.DBParameters,
       toGet = cms.VPSet(),
-      connect = cms.string('sqlite_file:QGL_cmssw8020_v2.db')
-#      connect = cms.string('sqlite_file:'+databasepath),
+#      connect = cms.string('sqlite_file:QGL_cmssw8020_v2.db')
+      connect = cms.string('sqlite_file:'+databasepath),
 )
 
 for type in ['AK4PFchs','AK4PFchs_antib']:
