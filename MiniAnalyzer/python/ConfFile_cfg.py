@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
+import os
 
 process = cms.Process("AK4jets")
 
