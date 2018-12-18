@@ -17,9 +17,9 @@ process.TFileService.fileName=cms.string('Jetter.root')
 fileList = FileUtils.loadListFromFile('RunIISummer16MiniAODv2_QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8_PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1_filelist.txt')
 
 process.source = cms.Source("PoolSource",
-	## Use whole data set
+	## Process whole data set
 	# fileNames = cms.untracked.vstring(*fileList)
-	## Use just one file
+	## Process just one file
 	fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/100000/08278E4E-E4EF-E611-8BD7-FA163E3ABA64.root')
 )
 
