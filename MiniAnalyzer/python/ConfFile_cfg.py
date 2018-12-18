@@ -14,7 +14,8 @@ process.load('CommonTools.UtilAlgos.TFileService_cfi')
 process.TFileService.fileName=cms.string('Jetter.root')
 
 # Load up the filelist
-fileList = FileUtils.loadListFromFile('RunIISummer16MiniAODv2_QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8_PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1_filelist.txt')
+confPath=os.environ['CMSSW_BASE']+'/src/Jetter/MiniAnalyzer/python/'
+fileList = FileUtils.loadListFromFile(confPath+'RunIISummer16MiniAODv2_QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8_PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1_filelist.txt')
 
 process.source = cms.Source("PoolSource",
 	## Process whole data set
