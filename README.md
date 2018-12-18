@@ -37,7 +37,7 @@ If desired, change the input file and the output name in ```python/ConfFile_cfg.
 
 To generate the tuples, execute
 ```
-    cmsRun python/ConfFile_cfg.py
+cmsRun python/ConfFile_cfg.py
 ```
 
 ## Content of the tuples
