@@ -59,7 +59,7 @@ In this version, the reconstructed jets are AK4 jets clustered from Particle Flo
 | jetLooseID | UInt_t | Binary variable indicating whether the jet passes Loose JetID criteria (https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016) |
 | jetTightID | UInt_t | Binary variable indicating whether the jet passes Tight JetID criteria (see above link) |
 | jetGenMatch | UInt_t | 1: if a matched generator level jet exists; 0: if no match was found |
-| jetQGl | Float_t | Quark-Gluon likelihood as determined by the current BDT discriminator (https://twiki.cern.ch/twiki/bin/viewauth/CMS/QuarkGluonLikelihood) |
+| jetQGl | Float_t | Quark-Gluon likelihood discriminator variable (https://twiki.cern.ch/twiki/bin/viewauth/CMS/QuarkGluonLikelihood) |
 | QG_ptD | Float_t | Jet energy variable (see above link) |
 | QG_axis2 | Float_t | Minor axis of the jet (see above link) |
 | QG_mult | UInt_t | Jet constituent multiplicity with additional cuts (see above link) |
